@@ -83,5 +83,4 @@ public static partial class RequestExtensions
     {
         return request.Desired.Resources.ToDictionary();
     }
-
 }

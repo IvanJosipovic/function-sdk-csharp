@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <AdditionalFiles Include="*.yaml" />
-    <None Include="xrd.schema.json" />
+    <Content Remove="apiextensions.schema.json" />
     <Content Remove="xrd.schema.json" />
   </ItemGroup>
 

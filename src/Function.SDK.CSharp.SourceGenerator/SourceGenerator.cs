@@ -74,201 +74,204 @@ namespace Function.SDK.CSharp.SourceGenerator
 
                     while (parser.Accept<DocumentStart>(out var start))
                     {
-                        var crd = deserializer.Deserialize<V1CompositeResourceDefinition>(parser);
+                        var crd = deserializer.Deserialize<V2CompositeResourceDefinition>(parser);
 
                         var key = $"{crd.ApiVersion}/{crd.Kind}";
 
-                        if (key == $"apiextensions.crossplane.io/v1/CompositeResourceDefinition")
+                        if (key == $"{V2CompositeResourceDefinition.KubeGroup}/{V2CompositeResourceDefinition.KubeApiVersion}/{V2CompositeResourceDefinition.KubeKind}")
                         {
                             try
                             {
-                                var version = crd.Spec.Versions.First(x => x.Served && x.Referenceable);
+                                var versions = crd.Spec.Versions.Where(x => x.Referenceable);
 
                                 var crossplaneProperties = """
-                                {
-                                  "crossplane": {
-                                    "description": "Configures how Crossplane will reconcile this composite resource",
-                                    "properties": {
-                                      "compositionRef": {
+                                    {
+                                      "crossplane": {
+                                        "description": "Configures how Crossplane will reconcile this composite resource",
                                         "properties": {
-                                          "name": {
-                                            "type": "string"
-                                          }
-                                        },
-                                        "required": [
-                                          "name"
-                                        ],
-                                        "type": "object"
-                                      },
-                                      "compositionRevisionRef": {
-                                        "properties": {
-                                          "name": {
-                                            "type": "string"
-                                          }
-                                        },
-                                        "required": [
-                                          "name"
-                                        ],
-                                        "type": "object"
-                                      },
-                                      "compositionRevisionSelector": {
-                                        "properties": {
-                                          "matchLabels": {
-                                            "additionalProperties": {
-                                              "type": "string"
+                                          "compositionRef": {
+                                            "properties": {
+                                              "name": {
+                                                "type": "string"
+                                              }
                                             },
+                                            "required": [
+                                              "name"
+                                            ],
                                             "type": "object"
-                                          }
-                                        },
-                                        "required": [
-                                          "matchLabels"
-                                        ],
-                                        "type": "object"
-                                      },
-                                      "compositionSelector": {
-                                        "properties": {
-                                          "matchLabels": {
-                                            "additionalProperties": {
-                                              "type": "string"
-                                            },
-                                            "type": "object"
-                                          }
-                                        },
-                                        "required": [
-                                          "matchLabels"
-                                        ],
-                                        "type": "object"
-                                      },
-                                      "compositionUpdatePolicy": {
-                                        "default": "Automatic",
-                                        "enum": [
-                                          "Automatic",
-                                          "Manual"
-                                        ],
-                                        "type": "string"
-                                      },
-                                      "resourceRefs": {
-                                        "items": {
-                                          "properties": {
-                                            "apiVersion": {
-                                              "type": "string"
-                                            },
-                                            "kind": {
-                                              "type": "string"
-                                            },
-                                            "name": {
-                                              "type": "string"
-                                            }
                                           },
-                                          "required": [
-                                            "apiVersion",
-                                            "kind"
-                                          ],
-                                          "type": "object"
+                                          "compositionRevisionRef": {
+                                            "properties": {
+                                              "name": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "name"
+                                            ],
+                                            "type": "object"
+                                          },
+                                          "compositionRevisionSelector": {
+                                            "properties": {
+                                              "matchLabels": {
+                                                "additionalProperties": {
+                                                  "type": "string"
+                                                },
+                                                "type": "object"
+                                              }
+                                            },
+                                            "required": [
+                                              "matchLabels"
+                                            ],
+                                            "type": "object"
+                                          },
+                                          "compositionSelector": {
+                                            "properties": {
+                                              "matchLabels": {
+                                                "additionalProperties": {
+                                                  "type": "string"
+                                                },
+                                                "type": "object"
+                                              }
+                                            },
+                                            "required": [
+                                              "matchLabels"
+                                            ],
+                                            "type": "object"
+                                          },
+                                          "compositionUpdatePolicy": {
+                                            "default": "Automatic",
+                                            "enum": [
+                                              "Automatic",
+                                              "Manual"
+                                            ],
+                                            "type": "string"
+                                          },
+                                          "resourceRefs": {
+                                            "items": {
+                                              "properties": {
+                                                "apiVersion": {
+                                                  "type": "string"
+                                                },
+                                                "kind": {
+                                                  "type": "string"
+                                                },
+                                                "name": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "required": [
+                                                "apiVersion",
+                                                "kind"
+                                              ],
+                                              "type": "object"
+                                            },
+                                            "type": "array",
+                                            "x-kubernetes-list-type": "atomic"
+                                          }
                                         },
-                                        "type": "array",
-                                        "x-kubernetes-list-type": "atomic"
+                                        "type": "object"
                                       }
-                                    },
-                                    "type": "object"
-                                  }
-                                }
-                                """;
+                                    }
+                                    """;
 
                                 var statusProperties = """
-                                {
-                                  "status": {
-                                    "properties": {
-                                      "conditions": {
-                                        "description": "Conditions of the resource.",
-                                        "items": {
-                                          "properties": {
-                                            "lastTransitionTime": {
-                                              "format": "date-time",
-                                              "type": "string"
+                                    {
+                                      "status": {
+                                        "properties": {
+                                          "conditions": {
+                                            "description": "Conditions of the resource.",
+                                            "items": {
+                                              "properties": {
+                                                "lastTransitionTime": {
+                                                  "format": "date-time",
+                                                  "type": "string"
+                                                },
+                                                "message": {
+                                                  "type": "string"
+                                                },
+                                                "observedGeneration": {
+                                                  "format": "int64",
+                                                  "type": "integer"
+                                                },
+                                                "reason": {
+                                                  "type": "string"
+                                                },
+                                                "status": {
+                                                  "type": "string"
+                                                },
+                                                "type": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "required": [
+                                                "lastTransitionTime",
+                                                "reason",
+                                                "status",
+                                                "type"
+                                              ],
+                                              "type": "object"
                                             },
-                                            "message": {
-                                              "type": "string"
-                                            },
-                                            "observedGeneration": {
-                                              "format": "int64",
-                                              "type": "integer"
-                                            },
-                                            "reason": {
-                                              "type": "string"
-                                            },
-                                            "status": {
-                                              "type": "string"
-                                            },
-                                            "type": {
-                                              "type": "string"
-                                            }
-                                          },
-                                          "required": [
-                                            "lastTransitionTime",
-                                            "reason",
-                                            "status",
-                                            "type"
-                                          ],
-                                          "type": "object"
+                                            "type": "array",
+                                            "x-kubernetes-list-map-keys": [
+                                              "type"
+                                            ],
+                                            "x-kubernetes-list-type": "map"
+                                          }
                                         },
-                                        "type": "array",
-                                        "x-kubernetes-list-map-keys": [
-                                          "type"
-                                        ],
-                                        "x-kubernetes-list-type": "map"
+                                        "type": "object"
                                       }
-                                    },
-                                    "type": "object"
-                                  }
-                                }
-                                """;
+                                    }
+                                    """;
 
-                                var schema = version.Schema.OpenAPIV3Schema;
-
-                                // Append crossplane and status properties to the Composite Resource Model
-                                schema["properties"]["spec"]["properties"]["crossplane"] = JsonNode.Parse(crossplaneProperties)["crossplane"].DeepClone();
-
-                                if (schema["properties"]["status"] == null)
+                                foreach (var version in versions)
                                 {
-                                    schema["properties"]["status"] = JsonNode.Parse($$"""
+                                    var schema = version.Schema.OpenAPIV3Schema;
+
+                                    // Append crossplane and status properties to the Composite Resource Model
+                                    schema["properties"]["spec"]["properties"]["crossplane"] = JsonNode.Parse(crossplaneProperties)["crossplane"].DeepClone();
+
+                                    if (schema["properties"]["status"] == null)
+                                    {
+                                        schema["properties"]["status"] = JsonNode.Parse($$"""
                                         {
                                             "description": "Status defines the observed state of the {{crd.Kind}}.",
                                             "type": "object",
                                             "properties": {}
                                         }
                                         """);
+                                    }
+
+                                    if (schema["properties"]["status"]["properties"] == null)
+                                    {
+                                        schema["properties"]["status"]["properties"] = JsonNode.Parse("{}");
+                                    }
+
+                                    schema["properties"]["status"]["properties"]["conditions"] = JsonNode.Parse(statusProperties)["status"]["properties"]["conditions"].DeepClone();
+
+                                    var doc = openAPIReader.ReadFragment<OpenApiSchema>(schema, OpenApiSpecVersion.OpenApi3_0, new OpenApiDocument(), out var diag);
+
+                                    if (diag != null && diag.Errors.Count > 0)
+                                    {
+                                        context.ReportDiagnostic(Diagnostic.Create(
+                                            new DiagnosticDescriptor(
+                                                "KG3",
+                                                "Error Parsin Open API Spec",
+                                                "Loaded file: {0}\r\n{1}",
+                                                "Function.SDK.CSharp.SourceGenerator",
+                                                DiagnosticSeverity.Error,
+                                                true),
+                                            Location.None,
+                                            pair.Name, diag.Errors.Select(x => x.Message).Aggregate((a, b) => a + "\r\n" + b)));
+
+                                    }
+
+                                    var code = codeGenerator.GenerateCompilationUnit(doc, "Function.SDK.CSharp.SourceGenerator.Models", version.Name, crd.Spec.Names.Kind, crd.Spec.Group, crd.Spec.Names.Plural, crd.Spec.Names.ListKind);
+
+                                    var filename = CodeGenerator.RemoveIllegalFileNameCharacters($"{version.Name}.{crd.Metadata.Name}.g.cs");
+
+                                    context.AddSource(filename, code.NormalizeWhitespace().ToFullString());
                                 }
-
-                                if (schema["properties"]["status"]["properties"] == null)
-                                {
-                                    schema["properties"]["status"]["properties"] = JsonNode.Parse("{}");
-                                }
-
-                                schema["properties"]["status"]["properties"]["conditions"] = JsonNode.Parse(statusProperties)["status"]["properties"]["conditions"].DeepClone();
-
-                                var doc = openAPIReader.ReadFragment<OpenApiSchema>(schema, OpenApiSpecVersion.OpenApi3_0, new OpenApiDocument(), out var diag);
-
-                                if (diag != null && diag.Errors.Count > 0)
-                                {
-                                    context.ReportDiagnostic(Diagnostic.Create(
-                                        new DiagnosticDescriptor(
-                                            "KG3",
-                                            "Error Parsin Open API Spec",
-                                            "Loaded file: {0}\r\n{1}",
-                                            "Function.SDK.CSharp.SourceGenerator",
-                                            DiagnosticSeverity.Error,
-                                            true),
-                                        Location.None,
-                                        pair.Name, diag.Errors.Select(x => x.Message).Aggregate((a,b) => a + "\r\n" + b)));
-
-                                }
-
-                                var code = codeGenerator.GenerateCompilationUnit(doc, "Function.SDK.CSharp.SourceGenerator.Models", version.Name, crd.Spec.Names.Kind, crd.Spec.Group, crd.Spec.Names.Plural, crd.Spec.Names.ListKind);
-
-                                var filename = CodeGenerator.RemoveIllegalFileNameCharacters($"{crd.Metadata.Name}.g.cs");
-
-                                context.AddSource(filename, code.NormalizeWhitespace().ToFullString());
                             }
                             catch (Exception e)
                             {
