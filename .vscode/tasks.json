@@ -1,0 +1,27 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+          "build",
+          "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "crossplane",
+      "command": "crossplane",
+      "type": "process",
+      "args": [
+          "render",
+          "example/xr.yaml",
+          "example/composition.yaml",
+          "example/functions.yaml"
+      ],
+      "problemMatcher": "$msCompile"
+    }
+  ]
+}

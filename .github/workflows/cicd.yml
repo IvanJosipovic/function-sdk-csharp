@@ -43,6 +43,14 @@ jobs:
     - name: .NET Test
       run: dotnet test -c Release --collect:"XPlat Code Coverage" --logger "trx;LogFileName=test-results.trx"
 
+    - name: .NET Test SDK
+      working-directory: tests/Function.SDK.CSharp.Tests
+      run: dotnet run -c Release -- --report-xunit-trx --report-xunit-trx-filename test-results.trx --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
+
+    - name: .NET Test Sample
+      working-directory: tests/Function.SDK.CSharp.Sample.Tests
+      run: dotnet run -c Release -- --report-xunit-trx --report-xunit-trx-filename test-results.trx --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
+
     - name: Coverage
       uses: codecov/codecov-action@v5
       with:

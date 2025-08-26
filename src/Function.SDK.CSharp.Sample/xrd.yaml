@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=xrd.schema.json
-apiVersion: apiextensions.crossplane.io/v1
+apiVersion: apiextensions.crossplane.io/v2
 kind: CompositeResourceDefinition
 metadata:
   name: xstoragebuckets.platform.example.com
@@ -11,7 +11,161 @@ spec:
     - crossplane
     kind: XStorageBucket
     plural: xstoragebuckets
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        service:
+          name: function-sdk-csharp-sample
+          namespace: crossplane-system
+          path: /convert
+          port: 9443
+        # Enter the Base64 encoded version of crossplane-system/crossplane-root-ca/tls.crt
+        # kubectl get secret crossplane-root-ca -n crossplane-system -o jsonpath='{.data.tls\.crt}'
+        #caBundle:
+      conversionReviewVersions:
+      - v1alpha1
+      - v1alpha2
   versions:
+  - name: v1alpha2
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        description: StorageBucket is the Schema for the StorageBucket API.
+        properties:
+          spec:
+            description: StorageBucketSpec defines the desired state of StorageBucket.
+            properties:
+              parameters:
+                properties:
+                  acl:
+                    description: Access control list for the storage bucket. Private, Blob (anonymous access for blobs), Container (anonymous access for containers and blobs)
+                    type: string
+                    enum:
+                    - private
+                    - blob
+                    - container
+                  location:
+                    description: Geographic location where the storage bucket will be created
+                    type: string
+                    enum:
+                    - 'asia'
+                    - 'asiapacific'
+                    - 'australia'
+                    - 'australiacentral'
+                    - 'australiacentral2'
+                    - 'australiaeast'
+                    - 'australiasoutheast'
+                    - 'austriaeast'
+                    - 'brazil'
+                    - 'brazilsouth'
+                    - 'brazilsoutheast'
+                    - 'brazilus'
+                    - 'canada'
+                    - 'canadacentral'
+                    - 'canadaeast'
+                    - 'centralindia'
+                    - 'centralus'
+                    - 'centraluseuap'
+                    - 'centralusstage'
+                    - 'chilecentral'
+                    - 'eastasia'
+                    - 'eastasiastage'
+                    - 'eastus'
+                    - 'eastus2'
+                    - 'eastus2euap'
+                    - 'eastus2stage'
+                    - 'eastusstage'
+                    - 'eastusstg'
+                    - 'europe'
+                    - 'france'
+                    - 'francecentral'
+                    - 'francesouth'
+                    - 'germany'
+                    - 'germanynorth'
+                    - 'germanywestcentral'
+                    - 'global'
+                    - 'india'
+                    - 'indonesia'
+                    - 'indonesiacentral'
+                    - 'israel'
+                    - 'israelcentral'
+                    - 'italy'
+                    - 'italynorth'
+                    - 'japan'
+                    - 'japaneast'
+                    - 'japanwest'
+                    - 'jioindiacentral'
+                    - 'jioindiawest'
+                    - 'korea'
+                    - 'koreacentral'
+                    - 'koreasouth'
+                    - 'malaysia'
+                    - 'malaysiawest'
+                    - 'mexico'
+                    - 'mexicocentral'
+                    - 'newzealand'
+                    - 'newzealandnorth'
+                    - 'northcentralus'
+                    - 'northcentralusstage'
+                    - 'northeurope'
+                    - 'norway'
+                    - 'norwayeast'
+                    - 'norwaywest'
+                    - 'poland'
+                    - 'polandcentral'
+                    - 'qatar'
+                    - 'qatarcentral'
+                    - 'singapore'
+                    - 'southafrica'
+                    - 'southafricanorth'
+                    - 'southafricawest'
+                    - 'southcentralus'
+                    - 'southcentralusstage'
+                    - 'southcentralusstg'
+                    - 'southeastasia'
+                    - 'southeastasiastage'
+                    - 'southindia'
+                    - 'spain'
+                    - 'spaincentral'
+                    - 'sweden'
+                    - 'swedencentral'
+                    - 'switzerland'
+                    - 'switzerlandnorth'
+                    - 'switzerlandwest'
+                    - 'taiwan'
+                    - 'uae'
+                    - 'uaecentral'
+                    - 'uaenorth'
+                    - 'uk'
+                    - 'uksouth'
+                    - 'ukwest'
+                    - 'unitedstates'
+                    - 'unitedstateseuap'
+                    - 'westcentralus'
+                    - 'westeurope'
+                    - 'westindia'
+                    - 'westus'
+                    - 'westus2'
+                    - 'westus2stage'
+                    - 'westus3'
+                    - 'westusstage'
+                  versioning:
+                    description: Enable versioning to maintain multiple versions of objects in the bucket
+                    type: boolean
+                type: object
+                required:
+                - acl
+                - location
+                - versioning
+            type: object
+            required:
+            - parameters
+        required:
+        - spec
+        type: object
+    served: false
+
   - name: v1alpha1
     referenceable: true
     schema:
