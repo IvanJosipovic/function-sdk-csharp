@@ -14,8 +14,8 @@ public class ConversionWebhookTests
     {
         var input = new V1ConversionReview()
         {
-            ApiVersion = V1alpha2XStorageBucket.KubeApiVersion,
-            Kind = V1alpha2XStorageBucket.KubeKind,
+            ApiVersion = "apiextensions.k8s.io/v1",
+            Kind = "ConversionReview",
 
             Request = new()
             {
