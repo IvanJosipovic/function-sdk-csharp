@@ -9,8 +9,8 @@ namespace Function.SDK.CSharp.Sample
     {
         public static V1ConversionReview Convert(V1ConversionReview conversion)
         {
-            if (conversion.Kind == V1alpha2XStorageBucket.KubeKind
-                && conversion.ApiVersion == V1alpha2XStorageBucket.KubeApiVersion
+            if (conversion.Kind == "ConversionReview"
+                && conversion.ApiVersion == "apiextensions.k8s.io/v1"
                 && conversion.Request?.DesiredApiVersion == V1alpha1XStorageBucket.KubeApiVersion
                )
             {
