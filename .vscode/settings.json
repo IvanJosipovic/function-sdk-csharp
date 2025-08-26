@@ -1,3 +1,4 @@
 {
-    "dotnet.defaultSolution": "Function.SDK.CSharp.sln"
+    "dotnet.defaultSolution": "Function.SDK.CSharp.sln",
+    "dotnet.testWindow.useTestingPlatformProtocol": true
 }

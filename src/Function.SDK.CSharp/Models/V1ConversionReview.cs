@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Runtime.Serialization;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Function.SDK.CSharp.Models;
@@ -12,13 +13,13 @@ public sealed class V1ConversionReview
     public string Kind { get; set; } = "ConversionReview";
 
     [JsonPropertyName("request")]
-    public V1ConversionReviewConversionRequest? Request { get; set; }
+    public V1ConversionReviewRequest? Request { get; set; }
 
     [JsonPropertyName("response")]
-    public V1ConversionReviewConversionResponse? Response { get; set; }
+    public V1ConversionReviewResponse Response { get; set; } = new();
 }
 
-public sealed class V1ConversionReviewConversionRequest
+public sealed class V1ConversionReviewRequest
 {
     /// <summary>
     /// Random uid uniquely identifying this conversion call
@@ -39,7 +40,7 @@ public sealed class V1ConversionReviewConversionRequest
     public JsonElement[] Objects { get; set; } = default!;
 }
 
-public sealed class V1ConversionReviewConversionResponse
+public sealed class V1ConversionReviewResponse
 {
     /// <summary>
     /// Must match &lt;request.uid&gt;
@@ -54,16 +55,29 @@ public sealed class V1ConversionReviewConversionResponse
     /// All other changes to metadata fields by the webhook are ignored.
     /// </summary>
     [JsonPropertyName("convertedObjects")]
-    public JsonElement[] ConvertedObjects { get; set; } = default!;
+    public List<JsonElement> ConvertedObjects { get; set; } = [];
 
     [JsonPropertyName("result")]
-    public V1ConversionReviewConversionResponseStatus Result { get; set; } = new();
+    public V1ConversionReviewResponseStatus Result { get; set; } = new();
 }
 
-public sealed class V1ConversionReviewConversionResponseStatus
+/// <summary>
+/// Webhook Response Status
+/// </summary>
+public enum V1ConversionReviewResponseStatusEnum
+{
+    ///<summary>Success</summary>
+    [EnumMember(Value = "Success"), JsonStringEnumMemberName("Success")]
+    Success,
+    ///<summary>Failure</summary>
+    [EnumMember(Value = "Failure"), JsonStringEnumMemberName("Failure")]
+    Failure,
+}
+
+public sealed class V1ConversionReviewResponseStatus
 {
     [JsonPropertyName("status")]
-    public string StatusText { get; set; } = "Success";
+    public V1ConversionReviewResponseStatusEnum Status { get; set; }
 
     [JsonPropertyName("message")]
     public string? Message { get; set; }
@@ -72,5 +86,5 @@ public sealed class V1ConversionReviewConversionResponseStatus
     public string? Reason { get; set; }
 
     [JsonPropertyName("code")]
-    public int? Code { get; set; }
+    public int Code { get; set; } = 200;
 }

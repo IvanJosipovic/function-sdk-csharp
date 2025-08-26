@@ -15,11 +15,14 @@ spec:
     strategy: Webhook
     webhook:
       clientConfig:
-       service:
-        name: function-sdk-csharp-sample
-        namespace: crossplane-system
-        path: /convert
-        port: 9443
+        service:
+          name: function-sdk-csharp-sample
+          namespace: crossplane-system
+          path: /convert
+          port: 9443
+        # Enter the Base64 encoded version of crossplane-system/crossplane-root-ca/tls.crt
+        # kubectl get secret crossplane-root-ca -n crossplane-system -o jsonpath='{.data.tls\.crt}'
+        #caBundle:
       conversionReviewVersions:
       - v1alpha1
       - v1alpha2

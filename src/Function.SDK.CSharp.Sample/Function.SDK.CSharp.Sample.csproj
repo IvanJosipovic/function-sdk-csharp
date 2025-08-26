@@ -9,7 +9,15 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <IsPackable>false</IsPackable>
     <DockerfileRunArguments>-p 9443:9443</DockerfileRunArguments>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
+
+	<ItemGroup>
+		<!-- Exclude the output of source generators from the compilation, show it in the IDE -->
+		<Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+		<None Include="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+	</ItemGroup>
 
   <ItemGroup>
     <AdditionalFiles Include="*.yaml" />
@@ -19,14 +27,18 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
-    <PackageReference Include="KubernetesCRDModelGen.Models.crossplane.io" Version="1.0.0-alpha.591" />
-    <PackageReference Include="KubernetesCRDModelGen.Models.azure.upbound.io" Version="1.0.0-alpha.591" />
-    <PackageReference Include="KubernetesCRDModelGen.SourceGenerator" Version="1.0.0-alpha.591" />
+    <PackageReference Include="KubernetesCRDModelGen.Models.crossplane.io" Version="1.0.0-alpha.592" />
+    <PackageReference Include="KubernetesCRDModelGen.Models.azure.upbound.io" Version="1.0.0-alpha.592" />
+    <PackageReference Include="KubernetesCRDModelGen.SourceGenerator" Version="1.0.0-alpha.592" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Function.SDK.CSharp.SourceGenerator\Function.SDK.CSharp.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
     <ProjectReference Include="..\Function.SDK.CSharp\Function.SDK.CSharp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Generated\Function.SDK.CSharp.SourceGenerator\Function.SDK.CSharp.SourceGenerator.SourceGenerator\" />
   </ItemGroup>
 
 </Project>

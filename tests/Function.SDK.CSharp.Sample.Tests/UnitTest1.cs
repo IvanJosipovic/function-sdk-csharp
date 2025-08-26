@@ -6,7 +6,6 @@ using Grpc.Core.Testing;
 using Grpc.Core.Utils;
 using Grpc.Core;
 using k8s;
-using KubernetesCRDModelGen.Models.storage.azure.m.upbound.io;
 using Microsoft.Extensions.Logging;
 using Shouldly;
 using KubernetesCRDModelGen.Models.azure.m.upbound.io;
