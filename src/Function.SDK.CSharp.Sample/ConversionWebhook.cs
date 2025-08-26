@@ -9,8 +9,8 @@ namespace Function.SDK.CSharp.Sample
     {
         public static V1ConversionReview Convert(V1ConversionReview conversion)
         {
-            if (conversion.Kind == "ConversionReview"
-                && conversion.ApiVersion == "apiextensions.k8s.io/v1"
+            if (conversion.Kind == V1ConversionReview.KubeKind
+                && conversion.ApiVersion == V1ConversionReview.KubeGroup + "/" + V1ConversionReview.KubeApiVersion
                 && conversion.Request?.DesiredApiVersion == V1alpha1XStorageBucket.KubeApiVersion
                )
             {
@@ -28,6 +28,7 @@ namespace Function.SDK.CSharp.Sample
             }
             else
             {
+                conversion.Response.Uid = conversion.Request.Uid;
                 conversion.Response.Result.Status = V1ConversionReviewResponseStatusEnum.Failure;
                 conversion.Response.Result.Message = "Unknown Version";
             }

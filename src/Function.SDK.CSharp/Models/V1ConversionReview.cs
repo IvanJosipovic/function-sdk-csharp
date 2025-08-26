@@ -6,11 +6,15 @@ namespace Function.SDK.CSharp.Models;
 
 public sealed class V1ConversionReview
 {
+    public const string KubeApiVersion = "v1";
+    public const string KubeKind = "ConversionReview";
+    public const string KubeGroup = "apiextensions.k8s.io";
+
     [JsonPropertyName("apiVersion")]
-    public string ApiVersion { get; set; } = "apiextensions.k8s.io/v1";
+    public string ApiVersion { get; set; } = KubeGroup + "/" + KubeApiVersion;
 
     [JsonPropertyName("kind")]
-    public string Kind { get; set; } = "ConversionReview";
+    public string Kind { get; set; } = KubeKind;
 
     [JsonPropertyName("request")]
     public V1ConversionReviewRequest? Request { get; set; }

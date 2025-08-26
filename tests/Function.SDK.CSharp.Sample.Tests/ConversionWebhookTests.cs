@@ -14,9 +14,6 @@ public class ConversionWebhookTests
     {
         var input = new V1ConversionReview()
         {
-            ApiVersion = "apiextensions.k8s.io/v1",
-            Kind = "ConversionReview",
-
             Request = new()
             {
                 Uid = Guid.NewGuid().ToString(),
