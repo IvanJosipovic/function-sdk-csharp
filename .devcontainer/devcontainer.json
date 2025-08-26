@@ -29,5 +29,6 @@
         "TARGET": "net9.0"
     },
     "portsAttributes": {
-    }
+    },
+    "remoteUser": "root"
 }
