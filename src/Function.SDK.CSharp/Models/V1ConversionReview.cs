@@ -17,7 +17,7 @@ public sealed class V1ConversionReview
     public string Kind { get; set; } = KubeKind;
 
     [JsonPropertyName("request")]
-    public V1ConversionReviewRequest? Request { get; set; }
+    public V1ConversionReviewRequest Request { get; set; }
 
     [JsonPropertyName("response")]
     public V1ConversionReviewResponse Response { get; set; } = new();
