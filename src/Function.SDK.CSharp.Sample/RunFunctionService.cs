@@ -56,18 +56,18 @@ public class RunFunctionService : FunctionRunnerServiceBase
             var observedGroup = request.GetObservedResource<V1beta1ResourceGroup>("rg");
 
             // Example dependent Cron Job which deploys if the Resource Group is ready
-            if (observedGroup != null && observedGroup.Status?.Conditions?.First(x => x.Type == "Ready").Status.Equals("True") == true)
-            {
-                var cron = new V1CronJob()
-                {
-                    Spec = new()
-                    {
-                        Suspend = false
-                    }
-                };
+            // if (observedGroup != null && observedGroup.Status?.Conditions?.First(x => x.Type == "Ready").Status.Equals("True") == true)
+            // {
+            //     var cron = new V1CronJob()
+            //     {
+            //         Spec = new()
+            //         {
+            //             Suspend = false
+            //         }
+            //     };
 
-                resp.Desired.AddOrUpdate("cron", cron);
-            }
+            //     resp.Desired.AddOrUpdate("cron", cron);
+            // }
 
             // Create Storage Account
             var desiredAccount = new V1beta1Account()
@@ -84,6 +84,7 @@ public class RunFunctionService : FunctionRunnerServiceBase
                         AccountReplicationType = "LRS",
                         Location = @params.Location.AsString(EnumFormat.EnumMemberValue),
                         InfrastructureEncryptionEnabled = true,
+                        PublicNetworkAccessEnabled = @params.Public,
                         BlobProperties = new()
                         {
                             VersioningEnabled = @params.Versioning
