@@ -37,8 +37,6 @@ public class RunFunctionService : FunctionRunnerServiceBase
 
             var @params = observedXR.Spec.Parameters;
 
-
-
             // Create Resource Group
             var desiredGroup = new V1beta1ResourceGroup()
             {
