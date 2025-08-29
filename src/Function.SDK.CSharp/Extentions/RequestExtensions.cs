@@ -99,6 +99,6 @@ public static partial class RequestExtensions
             return KubernetesJson.Deserialize<T>(json);
         }
 
-        return default(T);
+        return default;
     }
 }
