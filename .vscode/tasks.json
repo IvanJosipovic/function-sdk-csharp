@@ -6,8 +6,8 @@
       "command": "dotnet",
       "type": "process",
       "args": [
-          "build",
-          "/consoleloggerparameters:NoSummary"
+        "build",
+        "/consoleloggerparameters:NoSummary"
       ],
       "problemMatcher": "$msCompile"
     },
@@ -16,10 +16,10 @@
       "command": "crossplane",
       "type": "process",
       "args": [
-          "render",
-          "example/xr.yaml",
-          "example/composition.yaml",
-          "example/functions.yaml"
+        "render",
+        "example/xr.yaml",
+        "example/composition.yaml",
+        "example/functions.yaml"
       ],
       "problemMatcher": "$msCompile"
     }

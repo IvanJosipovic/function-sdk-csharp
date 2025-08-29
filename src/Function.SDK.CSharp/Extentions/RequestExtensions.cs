@@ -83,4 +83,40 @@ public static partial class RequestExtensions
     {
         return request.Desired.Resources.ToDictionary();
     }
+
+    /// <summary>
+    /// Get Desired Resource from the supplied request.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public static T? GetDesiredResource<T>(this RunFunctionRequest request, string key)
+    {
+        if (request.Desired.Resources.TryGetValue(key, out var resource))
+        {
+            string json = JsonFormatter.Default.Format(resource.Resource_);
+
+            return KubernetesJson.Deserialize<T>(json);
+        }
+
+        return default(T);
+    }
+
+    /// <summary>
+    /// Get Observed Resource from the supplied request.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public static T? GetObservedResource<T>(this RunFunctionRequest request, string key)
+    {
+        if (request.Observed.Resources.TryGetValue(key, out var resource))
+        {
+            string json = JsonFormatter.Default.Format(resource.Resource_);
+
+            return KubernetesJson.Deserialize<T>(json);
+        }
+
+        return default;
+    }
 }

@@ -153,6 +153,9 @@ spec:
                   versioning:
                     description: Enable versioning to maintain multiple versions of objects in the bucket
                     type: boolean
+                  public:
+                    description: Enable public access to the Account
+                    type: boolean
                 type: object
                 required:
                 - acl
@@ -291,6 +294,9 @@ spec:
                     - 'westusstage'
                   versioning:
                     description: Enable versioning to maintain multiple versions of objects in the bucket
+                    type: boolean
+                  public:
+                    description: Enable public access to the Account
                     type: boolean
                 type: object
                 required:

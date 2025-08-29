@@ -382,6 +382,10 @@ public partial class V1alpha2XStorageBucketSpecParameters
     /// <summary>Enable versioning to maintain multiple versions of objects in the bucket</summary>
     [JsonPropertyName("versioning")]
     public bool Versioning { get; set; }
+
+    /// <summary>Enable public access to the Account</summary>
+    [JsonPropertyName("public")]
+    public bool? Public { get; set; }
 }
 #nullable disable
 
