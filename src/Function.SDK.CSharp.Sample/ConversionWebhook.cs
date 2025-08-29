@@ -16,10 +16,10 @@ namespace Function.SDK.CSharp.Sample
             {
                 foreach (var item in conversion.Request.Objects)
                 {
-                    var source = KubernetesJson.Deserialize<V1alpha2XStorageBucket>(item.GetRawText());
+                    var source = KubernetesJson.Deserialize<V1alpha2XStorageBucket>(item);
                     source.ApiVersion = V1alpha1XStorageBucket.KubeApiVersion;
 
-                    var converted = JsonSerializer.Deserialize<JsonElement>(KubernetesJson.Serialize(source));
+                    var converted = KubernetesJson.Deserialize<JsonElement>(KubernetesJson.Serialize(source));
 
                     conversion.Response.ConvertedObjects.Add(converted);
                 }
