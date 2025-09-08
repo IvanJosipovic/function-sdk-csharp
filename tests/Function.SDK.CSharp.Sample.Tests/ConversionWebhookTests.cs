@@ -1,9 +1,8 @@
+using System.Text.Json;
 using Function.SDK.CSharp.Models;
 using Function.SDK.CSharp.SourceGenerator.Models.platform.example.com;
 using k8s;
-using k8s.Models;
 using Shouldly;
-using System.Text.Json;
 
 namespace Function.SDK.CSharp.Sample.Tests;
 

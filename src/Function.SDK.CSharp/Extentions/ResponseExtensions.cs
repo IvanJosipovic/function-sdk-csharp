@@ -1,7 +1,6 @@
-﻿using Apiextensions.Fn.Proto.V1;
-using Google.Protobuf.WellKnownTypes;
-using k8s;
 using System.Text.Json;
+using Apiextensions.Fn.Proto.V1;
+using Google.Protobuf.WellKnownTypes;
 
 namespace Function.SDK.CSharp;
 
@@ -146,7 +145,6 @@ public static partial class ResponseExtensions
         rsp.Requirements ??= new Requirements();
         rsp.Requirements.Resources[name] = selector;
     }
-
 
     public static void UpdateDesiredReadyStatus(this RunFunctionResponse response, RunFunctionRequest request, ILogger _logger)
     {
