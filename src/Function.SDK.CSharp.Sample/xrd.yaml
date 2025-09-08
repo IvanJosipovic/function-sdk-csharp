@@ -24,8 +24,7 @@ spec:
         # kubectl get secret crossplane-root-ca -n crossplane-system -o jsonpath='{.data.tls\.crt}'
         #caBundle:
       conversionReviewVersions:
-      - v1alpha1
-      - v1alpha2
+      - v1
   versions:
   - name: v1alpha2
     referenceable: true

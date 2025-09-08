@@ -1,4 +1,4 @@
-﻿using Apiextensions.Fn.Proto.V1;
+using Apiextensions.Fn.Proto.V1;
 using Google.Protobuf.WellKnownTypes;
 using k8s;
 

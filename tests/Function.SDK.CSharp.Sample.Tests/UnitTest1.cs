@@ -1,15 +1,15 @@
 using Apiextensions.Fn.Proto.V1;
+using EnumsNET;
 using Function.SDK.CSharp.SourceGenerator.Models.platform.example.com;
-using Google.Protobuf.WellKnownTypes;
 using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
+using Grpc.Core;
 using Grpc.Core.Testing;
 using Grpc.Core.Utils;
-using Grpc.Core;
 using k8s;
+using KubernetesCRDModelGen.Models.azure.m.upbound.io;
 using Microsoft.Extensions.Logging;
 using Shouldly;
-using KubernetesCRDModelGen.Models.azure.m.upbound.io;
-using EnumsNET;
 
 namespace Function.SDK.CSharp.Sample.Tests;
 

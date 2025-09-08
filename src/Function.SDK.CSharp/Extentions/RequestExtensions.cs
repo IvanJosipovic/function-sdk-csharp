@@ -1,9 +1,7 @@
 using Apiextensions.Fn.Proto.V1;
 using Google.Protobuf;
-using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 using k8s;
-using System.Runtime.CompilerServices;
 
 namespace Function.SDK.CSharp;
 

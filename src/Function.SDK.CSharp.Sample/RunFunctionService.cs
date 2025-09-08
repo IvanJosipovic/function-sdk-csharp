@@ -3,7 +3,6 @@ using EnumsNET;
 using Function.SDK.CSharp.SourceGenerator.Models.platform.example.com;
 using Grpc.Core;
 using k8s.Models;
-using KubernetesCRDModelGen.Models.protection.crossplane.io;
 using KubernetesCRDModelGen.Models.azure.m.upbound.io;
 using KubernetesCRDModelGen.Models.storage.azure.m.upbound.io;
 using static Apiextensions.Fn.Proto.V1.FunctionRunnerService;
@@ -50,8 +49,7 @@ public class RunFunctionService : FunctionRunnerServiceBase
             };
 
             resp.Desired.AddOrUpdate("rg", desiredGroup);
-
-            var observedGroup = request.GetObservedResource<V1beta1ResourceGroup>("rg");
+            _ = request.GetObservedResource<V1beta1ResourceGroup>("rg");
 
             // Example dependent Cron Job which deploys if the Resource Group is ready
             // if (observedGroup != null && observedGroup.Status?.Conditions?.First(x => x.Type == "Ready").Status.Equals("True") == true)
