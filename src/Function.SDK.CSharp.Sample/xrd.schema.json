@@ -124,8 +124,13 @@
                                 "conversionReviewVersions": {
                                     "description": "conversionReviewVersions is an ordered list of preferred `ConversionReview`\nversions the Webhook expects. The API server will use the first version in\nthe list which it supports. If none of the versions specified in this list\nare supported by API server, conversion will fail for the custom resource.\nIf a persisted Webhook configuration specifies allowed versions and does not\ninclude any versions known to the API Server, calls to the webhook will fail.",
                                     "items": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "enum": [
+                                            "v1",
+                                            "v1beta1"
+                                        ]
                                     },
+
                                     "type": "array",
                                     "x-kubernetes-list-type": "atomic"
                                 }

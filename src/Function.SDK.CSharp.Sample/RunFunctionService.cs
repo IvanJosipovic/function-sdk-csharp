@@ -3,8 +3,8 @@ using EnumsNET;
 using Function.SDK.CSharp.SourceGenerator.Models.platform.example.com;
 using Grpc.Core;
 using k8s.Models;
-using KubernetesCRDModelGen.Models.protection.crossplane.io;
 using KubernetesCRDModelGen.Models.azure.m.upbound.io;
+using KubernetesCRDModelGen.Models.protection.crossplane.io;
 using KubernetesCRDModelGen.Models.storage.azure.m.upbound.io;
 using static Apiextensions.Fn.Proto.V1.FunctionRunnerService;
 
