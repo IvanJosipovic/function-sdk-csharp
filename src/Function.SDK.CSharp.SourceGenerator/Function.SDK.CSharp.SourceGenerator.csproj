@@ -34,7 +34,7 @@
         <!-- Generator dependencies -->
         <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 
-        <PackageReference Include="KubernetesCRDModelGen.Base" Version="1.0.0-alpha.601" GeneratePathProperty="true" PrivateAssets="all" />
+        <PackageReference Include="KubernetesCRDModelGen.Base" Version="1.0.0-alpha.615" GeneratePathProperty="true" PrivateAssets="all" />
         <None Include="$(PKGKubernetesCRDModelGen_Base)\lib\netstandard2.0\*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
 
         <PackageReference Include="System.Text.Json" Version="9.0.9" GeneratePathProperty="true" PrivateAssets="all" />
