@@ -20,9 +20,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
-    <PackageReference Include="KubernetesCRDModelGen.Models.crossplane.io" Version="1.0.0-alpha.601" />
-    <PackageReference Include="KubernetesCRDModelGen.Models.azure.upbound.io" Version="1.0.0-alpha.601" />
-    <PackageReference Include="KubernetesCRDModelGen.SourceGenerator" Version="1.0.0-alpha.601" />
+    <PackageReference Include="KubernetesCRDModelGen.Models.crossplane.io" Version="1.0.0-alpha.612" />
+    <PackageReference Include="KubernetesCRDModelGen.Models.azure.upbound.io" Version="1.0.0-alpha.612" />
+    <PackageReference Include="KubernetesCRDModelGen.SourceGenerator" Version="1.0.0-alpha.615" />
   </ItemGroup>
 
   <ItemGroup>
