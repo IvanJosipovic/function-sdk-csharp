@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\$(AssemblyName).SourceGenerator\$(AssemblyName).SourceGenerator.csproj" ReferenceOutputAssembly="true">
+    <ProjectReference Include="..\$(AssemblyName).SourceGenerator\$(AssemblyName).SourceGenerator.csproj" ReferenceOutputAssembly="false">
       <PrivateAssets>all</PrivateAssets>
     </ProjectReference>
     <None Remove="$(OutputPath)\$(AssemblyName).SourceGenerator.dll" />
