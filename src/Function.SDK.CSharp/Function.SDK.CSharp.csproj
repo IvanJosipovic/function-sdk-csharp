@@ -24,14 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\$(AssemblyName).SourceGenerator\$(AssemblyName).SourceGenerator.csproj" ReferenceOutputAssembly="false">
-      <PrivateAssets>all</PrivateAssets>
-    </ProjectReference>
-    <None Remove="$(OutputPath)\$(AssemblyName).SourceGenerator.dll" />
-    <None Include="..\$(AssemblyName).SourceGenerator\bin\$(Configuration)\netstandard2.0\$(AssemblyName).SourceGenerator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Enums.NET" Version="5.0.0" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
     <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.71.0" />
@@ -44,3 +36,4 @@
   </ItemGroup>
 
 </Project>
+
