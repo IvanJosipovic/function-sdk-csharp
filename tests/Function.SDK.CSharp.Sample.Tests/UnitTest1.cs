@@ -252,7 +252,7 @@ public static class TestExtensions
 
     public static T GetResource<T>(this State state, string key)
     {
-        string json = JsonFormatter.Default.Format(state.Resources[key].Resource_);
+        var json = JsonFormatter.Default.Format(state.Resources[key].Resource_);
 
         return KubernetesJson.Deserialize<T>(json);
     }

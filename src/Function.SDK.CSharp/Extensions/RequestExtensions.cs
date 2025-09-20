@@ -42,9 +42,17 @@ public static partial class RequestExtensions
             },
             Desired = request.Desired,
             Context = request.Context,
+            Requirements = new()
         };
 
         return resp;
+    }
+
+    public static T GetKubeResource<T>(this Resource resource)
+    {
+        var json = JsonFormatter.Default.Format(resource.Resource_);
+
+        return KubernetesJson.Deserialize<T>(json);
     }
 
     /// <summary>
@@ -55,9 +63,7 @@ public static partial class RequestExtensions
     /// <returns></returns>
     public static T? GetObservedCompositeResource<T>(this RunFunctionRequest request)
     {
-        var json = JsonFormatter.Default.Format(request.Observed.Composite.Resource_);
-
-        return KubernetesJson.Deserialize<T>(json);
+        return request.Observed.Composite.GetKubeResource<T>();
     }
 
     /// <summary>
@@ -92,9 +98,7 @@ public static partial class RequestExtensions
     {
         if (request.Desired.Resources.TryGetValue(key, out var resource))
         {
-            var json = JsonFormatter.Default.Format(resource.Resource_);
-
-            return KubernetesJson.Deserialize<T>(json);
+            return resource.GetKubeResource<T>();
         }
 
         return default;
@@ -110,9 +114,7 @@ public static partial class RequestExtensions
     {
         if (request.Observed.Resources.TryGetValue(key, out var resource))
         {
-            var json = JsonFormatter.Default.Format(resource.Resource_);
-
-            return KubernetesJson.Deserialize<T>(json);
+            return resource.GetKubeResource<T>();
         }
 
         return default;
@@ -124,13 +126,19 @@ public static partial class RequestExtensions
     /// <param name="request">The RunFunctionRequest.</param>
     /// <param name="key">The Resource Key</param>
     /// <returns>A Required resource</returns>
-    public static T? GetRequiredResource<T>(this RunFunctionRequest request, string key)
+    public static List<T>? GetRequiredResource<T>(this RunFunctionRequest request, string key)
     {
         if (request.RequiredResources.TryGetValue(key, out var resource))
         {
-            var json = JsonFormatter.Default.Format(resource);
+            var list = new List<T>();
 
-            return KubernetesJson.Deserialize<T>(json);
+            foreach (var item in resource.Items)
+            {
+                var obj = item.GetKubeResource<T>();
+                list.Add(obj);
+            }
+
+            return list;
         }
 
         return default;
