@@ -53,9 +53,9 @@ public static partial class RequestExtensions
     /// <typeparam name="T"></typeparam>
     /// <param name="request"></param>
     /// <returns></returns>
-    public static T GetObservedCompositeResource<T>(this RunFunctionRequest request)
+    public static T? GetObservedCompositeResource<T>(this RunFunctionRequest request)
     {
-        string json = JsonFormatter.Default.Format(request.Observed.Composite.Resource_);
+        var json = JsonFormatter.Default.Format(request.Observed.Composite.Resource_);
 
         return KubernetesJson.Deserialize<T>(json);
     }
@@ -92,12 +92,12 @@ public static partial class RequestExtensions
     {
         if (request.Desired.Resources.TryGetValue(key, out var resource))
         {
-            string json = JsonFormatter.Default.Format(resource.Resource_);
+            var json = JsonFormatter.Default.Format(resource.Resource_);
 
             return KubernetesJson.Deserialize<T>(json);
         }
 
-        return default(T);
+        return default;
     }
 
     /// <summary>
@@ -110,7 +110,25 @@ public static partial class RequestExtensions
     {
         if (request.Observed.Resources.TryGetValue(key, out var resource))
         {
-            string json = JsonFormatter.Default.Format(resource.Resource_);
+            var json = JsonFormatter.Default.Format(resource.Resource_);
+
+            return KubernetesJson.Deserialize<T>(json);
+        }
+
+        return default;
+    }
+
+    /// <summary>
+    /// Get a Required Resource from the supplied request.
+    /// </summary>
+    /// <param name="request">The RunFunctionRequest.</param>
+    /// <param name="key">The Resource Key</param>
+    /// <returns>A Required resource</returns>
+    public static T? GetRequiredResource<T>(this RunFunctionRequest request, string key)
+    {
+        if (request.RequiredResources.TryGetValue(key, out var resource))
+        {
+            var json = JsonFormatter.Default.Format(resource);
 
             return KubernetesJson.Deserialize<T>(json);
         }
