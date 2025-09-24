@@ -71,7 +71,10 @@ public class UnitTest1
                 [
                     new()
                     {
-                        Status = "Ready"
+                        Status = "Ready",
+                        LastTransitionTime = "01/01/2025",
+                        Reason = "test",
+                        Type = "testType"
                     }
                 ]
             }
@@ -134,8 +137,10 @@ public class UnitTest1
                 [
                     new()
                     {
-                        Type = "Ready",
-                        Status = "False"
+                        Status = "Ready",
+                        LastTransitionTime = "01/01/2025",
+                        Reason = "test",
+                        Type = "testType"
                     }
                 ]
             }
@@ -199,8 +204,10 @@ public class UnitTest1
                 [
                     new()
                     {
+                        LastTransitionTime = "01/01/2025",
+                        Reason = "test",
+                        Status = "True",
                         Type = "Ready",
-                        Status = "True"
                     }
                 ]
             }
