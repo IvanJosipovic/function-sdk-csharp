@@ -22,11 +22,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KubernetesCRDModelGen.Base" Version="1.0.0-alpha.616" PrivateAssets="all" />
+    <PackageReference Include="KubernetesCRDModelGen.Base" Version="1.0.0-alpha.622" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="4.14.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" PrivateAssets="all" />
     <PackageReference Include="YamlDotNet" Version="16.3.0" PrivateAssets="all" />
-    <PackageReference Include="YamlDotNet.System.Text.Json" Version="1.6.6" PrivateAssets="all"  />
+    <PackageReference Include="YamlDotNet.System.Text.Json" Version="1.6.6" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,9 +44,7 @@
 
   <Target Name="GetDependencyTargetPaths" AfterTargets="ResolvePackageDependenciesForBuild">
     <ItemGroup>
-    <DllDependencies
-           Include="@(ResolvedCompileFileDefinitions->'%(FullPath)')"
-           Condition="$([System.String]::Equals('%(ResolvedCompileFileDefinitions.Extension)', '.dll')) and ! $([System.String]::Copy('%(ResolvedCompileFileDefinitions.Filename)').StartsWith('Microsoft.CodeAnalysis.'))" />
+    <DllDependencies Include="@(ResolvedCompileFileDefinitions->'%(FullPath)')" Condition="$([System.String]::Equals('%(ResolvedCompileFileDefinitions.Extension)', '.dll')) and ! $([System.String]::Copy('%(ResolvedCompileFileDefinitions.Filename)').StartsWith('Microsoft.CodeAnalysis.'))" />
       <TargetPathWithTargetPlatformMoniker Include="@(DllDependencies)" IncludeRuntimeDependency="false" />
       <None Include="@(DllDependencies)" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     </ItemGroup>
