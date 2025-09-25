@@ -95,6 +95,7 @@ jobs:
 
     - name: Semantic Release
       if: steps.semantic.outputs.new_release_published == 'true'
+      id: semantic_final
       uses: cycjimmy/semantic-release-action@v5
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -103,18 +104,18 @@ jobs:
           conventional-changelog-conventionalcommits
 
     - name: NuGet login (OIDC → temp API key)
-      if: steps.semantic.outputs.new_release_published == 'true'
+      if: steps.semantic_final.outputs.new_release_published == 'true'
       uses: NuGet/login@v1
       id: login
       with:
         user: IvanJosipovic
 
     - name: .NET NuGet Push
-      if: steps.semantic.outputs.new_release_published == 'true'
+      if: steps.semantic_final.outputs.new_release_published == 'true'
       run: dotnet nuget push src/**/*.nupkg -s https://api.nuget.org/v3/index.json -k ${{steps.login.outputs.NUGET_API_KEY}}
 
     - name: Docker Push
-      if: steps.semantic.outputs.new_release_published == 'true'
+      if: steps.semantic_final.outputs.new_release_published == 'true'
       run: |
         echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${GITHUB_ACTOR} --password-stdin
 
