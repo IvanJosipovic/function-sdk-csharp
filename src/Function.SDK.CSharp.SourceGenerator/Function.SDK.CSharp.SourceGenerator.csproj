@@ -44,7 +44,7 @@
 
   <Target Name="GetDependencyTargetPaths" AfterTargets="ResolvePackageDependenciesForBuild">
     <ItemGroup>
-    <DllDependencies Include="@(ResolvedCompileFileDefinitions->'%(FullPath)')" Condition="$([System.String]::Equals('%(ResolvedCompileFileDefinitions.Extension)', '.dll')) and ! $([System.String]::Copy('%(ResolvedCompileFileDefinitions.Filename)').StartsWith('Microsoft.CodeAnalysis.'))" />
+    <DllDependencies Include="@(ResolvedCompileFileDefinitions->'%(FullPath)')" Condition="$([System.String]::Equals('%(ResolvedCompileFileDefinitions.Extension)', '.dll')) and ! $([System.String]::Copy('%(ResolvedCompileFileDefinitions.Filename)').StartsWith('Microsoft.CodeAnalysis'))" />
       <TargetPathWithTargetPlatformMoniker Include="@(DllDependencies)" IncludeRuntimeDependency="false" />
       <None Include="@(DllDependencies)" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     </ItemGroup>
