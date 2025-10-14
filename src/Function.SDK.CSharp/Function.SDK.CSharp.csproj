@@ -28,7 +28,7 @@
     <PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
     <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.71.0" />
     <PackageReference Include="KubernetesClient" Version="17.0.14" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Certificate" Version="9.0.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Certificate" Version="9.0.10" />
   </ItemGroup>
 
   <ItemGroup>
