@@ -5,6 +5,8 @@
 
 The C# SDK for writing [composition functions](https://docs.crossplane.io/latest/composition/compositions/).
 
+Working example, https://github.com/IvanJosipovic/function-kubemodelrepo
+
 ## Features
 - XRD to Model Generation
   - Modify the xrd.yaml and models will be automatically generated
