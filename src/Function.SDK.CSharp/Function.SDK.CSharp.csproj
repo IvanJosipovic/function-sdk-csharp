@@ -27,7 +27,7 @@
     <PackageReference Include="Enums.NET" Version="5.0.0" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
     <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.71.0" />
-    <PackageReference Include="KubernetesClient" Version="18.0.5" />
+    <PackageReference Include="KubernetesClient" Version="18.0.13" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Certificate" Version="9.0.10" />
   </ItemGroup>
 
