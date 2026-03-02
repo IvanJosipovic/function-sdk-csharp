@@ -76,15 +76,15 @@ jobs:
         path: src/**/*.nupkg
 
     - name: Docker Buildx
-      run: docker buildx build --platform linux/amd64,linux/arm64 -t test.loc/function-sdk-csharp-sample --build-arg VERSION=${{ (steps.semantic.outputs.new_release_published && steps.semantic.outputs.new_release_version) || '0.0.1' }} -f src/Function.SDK.CSharp.Sample/Dockerfile src
+      run: docker buildx build --platform linux/amd64,linux/arm64 -t test.loc/function-sdk-csharp-example --build-arg VERSION=${{ (steps.semantic.outputs.new_release_published && steps.semantic.outputs.new_release_version) || '0.0.1' }} -f src/Function.SDK.CSharp.Example/Dockerfile src
 
     - name: Load Docker Image
-      run: docker buildx build --load --platform $(docker info --format '{{.Architecture}}') -t test.loc/function-sdk-csharp-sample -f src/Function.SDK.CSharp.Sample/Dockerfile src
+      run: docker buildx build --load --platform $(docker info --format '{{.Architecture}}') -t test.loc/function-sdk-csharp-example -f src/Function.SDK.CSharp.Example/Dockerfile src
 
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: 'test.loc/function-sdk-csharp-sample'
+        image-ref: 'test.loc/function-sdk-csharp-example'
         format: 'table'
         exit-code: '1'
         ignore-unfixed: true
@@ -119,4 +119,4 @@ jobs:
       run: |
         echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${GITHUB_ACTOR} --password-stdin
 
-        docker buildx build --push --platform linux/amd64,linux/arm64 -t ghcr.io/${GITHUB_REPOSITORY,,}/function-sdk-csharp-sample:${{ github.ref_name == 'main' && 'latest' || github.ref_name == 'alpha' && 'alpha' || github.ref_name == 'beta' && 'beta' }} -t ghcr.io/${GITHUB_REPOSITORY,,}/function-sdk-csharp-sample:${{ steps.semantic.outputs.new_release_version }} --build-arg VERSION=${{ steps.semantic.outputs.new_release_version }} -f src/Function.SDK.CSharp.Sample/Dockerfile src
+        docker buildx build --push --platform linux/amd64,linux/arm64 -t ghcr.io/${GITHUB_REPOSITORY,,}/function-sdk-csharp-example:${{ github.ref_name == 'main' && 'latest' || github.ref_name == 'alpha' && 'alpha' || github.ref_name == 'beta' && 'beta' }} -t ghcr.io/${GITHUB_REPOSITORY,,}/function-sdk-csharp-example:${{ steps.semantic.outputs.new_release_version }} --build-arg VERSION=${{ steps.semantic.outputs.new_release_version }} -f src/Function.SDK.CSharp.Example/Dockerfile src

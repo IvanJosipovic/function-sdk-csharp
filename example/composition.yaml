@@ -1,7 +1,7 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
-  name: function-sdk-csharp-sample
+  name: function-sdk-csharp-example
 spec:
   compositeTypeRef:
     apiVersion: platform.example.com/v1alpha1
@@ -10,4 +10,4 @@ spec:
   pipeline:
   - step: run-the-function
     functionRef:
-      name: function-sdk-csharp-sample
+      name: function-sdk-csharp-example

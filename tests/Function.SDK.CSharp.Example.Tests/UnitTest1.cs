@@ -11,7 +11,7 @@ using KubernetesCRDModelGen.Models.azure.m.upbound.io;
 using Microsoft.Extensions.Logging;
 using Shouldly;
 
-namespace Function.SDK.CSharp.Sample.Tests;
+namespace Function.SDK.CSharp.Example.Tests;
 
 public class UnitTest1
 {

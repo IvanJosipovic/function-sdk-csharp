@@ -1,7 +1,7 @@
 ﻿apiVersion: meta.pkg.crossplane.io/v1
 kind: Function
 metadata:
-  name: function-sdk-csharp-sample
+  name: function-sdk-csharp-example
   annotations:
     meta.crossplane.io/maintainer: Ivan Josipovic
     meta.crossplane.io/source: github.com/IvanJosipovic/function-sdk-csharp

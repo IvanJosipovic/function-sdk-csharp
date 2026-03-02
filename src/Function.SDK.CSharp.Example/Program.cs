@@ -1,6 +1,6 @@
 using Function.SDK.CSharp.Models;
 
-namespace Function.SDK.CSharp.Sample;
+namespace Function.SDK.CSharp.Example;
 
 public class Program
 {
