@@ -4,7 +4,7 @@ using Function.SDK.CSharp.SourceGenerator.Models.platform.example.com;
 using k8s;
 using Shouldly;
 
-namespace Function.SDK.CSharp.Sample.Tests;
+namespace Function.SDK.CSharp.Example.Tests;
 
 public class ConversionWebhookTests
 {

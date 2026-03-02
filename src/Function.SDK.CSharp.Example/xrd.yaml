@@ -16,7 +16,7 @@ spec:
     webhook:
       clientConfig:
         service:
-          name: function-sdk-csharp-sample
+          name: function-sdk-csharp-example
           namespace: crossplane-system
           path: /convert
           port: 9443

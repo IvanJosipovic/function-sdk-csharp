@@ -7,7 +7,7 @@ using KubernetesCRDModelGen.Models.azure.m.upbound.io;
 using KubernetesCRDModelGen.Models.storage.azure.m.upbound.io;
 using static Apiextensions.Fn.Proto.V1.FunctionRunnerService;
 
-namespace Function.SDK.CSharp.Sample;
+namespace Function.SDK.CSharp.Example;
 
 public class RunFunctionService : FunctionRunnerServiceBase
 {

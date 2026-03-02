@@ -1,4 +1,5 @@
 # function-sdk-csharp
+
 [![codecov](https://codecov.io/gh/IvanJosipovic/function-sdk-csharp/graph/badge.svg?token=Xzi1otVyUo)](https://codecov.io/gh/IvanJosipovic/function-sdk-csharp)
 [![Nuget (with prereleases)](https://img.shields.io/nuget/vpre/Function.SDK.CSharp.svg?style=flat-square)](https://www.nuget.org/packages?q=Function.SDK.CSharp)
 [![Nuget (with prereleases)](https://img.shields.io/nuget/dt/Function.SDK.CSharp.svg?style=flat-square)](https://www.nuget.org/packages?q=Function.SDK.CSharp)
@@ -8,13 +9,15 @@ The C# SDK for writing [composition functions](https://docs.crossplane.io/latest
 Working example, https://github.com/IvanJosipovic/function-kubemodelrepo
 
 ## Features
+
 - XRD to Model Generation
   - Modify the xrd.yaml and models will be automatically generated
 - CRD to Model Generation
   - Add crd.yaml(s) to the project and models will be automatically generated
   - Most Crossplane Providers already published [KubernetesCRDModelGen](https://github.com/IvanJosipovic/KubernetesCRDModelGen?tab=readme-ov-file#published-packages)
+
     | Group | NuGet |
-    |---|---|
+    | --- | --- |
     | aws.upbound.io | [Link](https://www.nuget.org/packages/KubernetesCRDModelGen.Models.aws.upbound.io/) |
     | azapi.upbound.io | [Link](https://www.nuget.org/packages/KubernetesCRDModelGen.Models.azapi.upbound.io/) |
     | azure.upbound.io | [Link](https://www.nuget.org/packages/KubernetesCRDModelGen.Models.azure.upbound.io/) |
@@ -28,6 +31,7 @@ Working example, https://github.com/IvanJosipovic/function-kubemodelrepo
     | tf.upbound.io | [Link](https://www.nuget.org/packages/KubernetesCRDModelGen.Models.tf.upbound.io/) |
     | upbound.io | [Link](https://www.nuget.org/packages/KubernetesCRDModelGen.Models.upbound.io/) |
     | vault.upbound.io | [Link](https://www.nuget.org/packages/KubernetesCRDModelGen.Models.vault.upbound.io/) |
+
 - Supports Crossplane v1.17 or greater
 
 ## How to Test
@@ -36,23 +40,29 @@ You can run your function locally and test it using `crossplane render`
 with the example manifests.
 
 ### Download Crank and rename to Crossplane
+
 https://releases.crossplane.io/stable/current/bin
 
 ## Run Function In IDE
-Download the lastest [.NET 9 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
+
+Download the lastest [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
+
 ```shell
 dotnet debug
 ```
 
 ## Run Function In Docker
+
 ```shell
-docker build -t function-sdk-csharp-sample -f src/Function.SDK.CSharp.Sample/Dockerfile src
-docker run -it -p 9443:9443 function-sdk-csharp-sample
+docker build -t function-sdk-csharp-example -f src/Function.SDK.CSharp.Example/Dockerfile src
+docker run -it -p 9443:9443 function-sdk-csharp-example
 ```
 
 ## Run Test
+
 Then, in another terminal, call it with these example manifests
-```
+
+```shell
 crossplane render example/xr.yaml example/composition.yaml example/functions.yaml
 ```
 

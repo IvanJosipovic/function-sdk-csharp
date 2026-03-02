@@ -3,7 +3,7 @@ using Function.SDK.CSharp.Models;
 using Function.SDK.CSharp.SourceGenerator.Models.platform.example.com;
 using k8s;
 
-namespace Function.SDK.CSharp.Sample;
+namespace Function.SDK.CSharp.Example;
 
 public static class ConversionWebhook
 {
