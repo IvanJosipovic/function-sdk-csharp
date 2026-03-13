@@ -33,7 +33,7 @@ jobs:
         global-json-file: global.json
 
     - name: Setup Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@v4
 
     - name: Semantic Release Dry Run
       uses: cycjimmy/semantic-release-action@v5
