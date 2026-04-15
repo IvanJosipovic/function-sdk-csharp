@@ -2,8 +2,6 @@
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path=".github/workflows/cicd.yml" />
-    <File Path="example/composition.yaml" />
-    <File Path="example/functions.yaml" />
     <File Path="global.json" />
     <File Path="README.md" />
   </Folder>

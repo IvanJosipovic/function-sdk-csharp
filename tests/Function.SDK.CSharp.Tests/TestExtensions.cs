@@ -28,7 +28,7 @@ public static class TestExtensions
 
     public static RunFunctionResponse GetTestResponse(this RunFunctionRequest request)
     {
-        var svc = new RunFunctionService(new LoggerFactory().CreateLogger<RunFunctionService>());
+        var svc = new TestRunFunctionService(new LoggerFactory().CreateLogger<TestRunFunctionService>());
         var fakeServerCallContext = TestServerCallContext.Create("/apiextensions.fn.proto.v1.FunctionRunnerService/RunFunction", null, DateTime.UtcNow.AddHours(1), [], CancellationToken.None, "127.0.0.1", null, null, (metadata) => TaskUtils.CompletedTask, () => new WriteOptions(), (writeOptions) => { });
 
         return svc.RunFunction(request, fakeServerCallContext)

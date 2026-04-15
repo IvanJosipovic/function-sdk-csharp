@@ -8,7 +8,7 @@ The C# SDK for writing [composition functions](https://docs.crossplane.io/latest
 
 Working example, https://github.com/IvanJosipovic/function-kubemodelrepo
 
-# CSharp Template
+## C# Template
 
 [Template Repository](https://github.com/IvanJosipovic/function-template-csharp)
 

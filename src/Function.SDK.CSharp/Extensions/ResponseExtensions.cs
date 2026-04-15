@@ -146,7 +146,7 @@ public static partial class ResponseExtensions
         rsp.Requirements.Resources[name] = selector;
     }
 
-    public static void UpdateDesiredReadyStatus(this RunFunctionResponse response, RunFunctionRequest request, ILogger _logger)
+    public static void UpdateDesiredReadyStatus(this RunFunctionResponse response, RunFunctionRequest request, ILogger _logger, bool ignoreNoReadyCondition = false)
     {
         var observed = request.GetObservedComposedResources();
 
@@ -169,6 +169,13 @@ public static partial class ResponseExtensions
                 // If this observed resource has a status condition with type: Ready,
                 // status: True, we set its readiness to true.
                 var condition = or.GetCondition("Ready");
+
+                if (ignoreNoReadyCondition && condition == null)
+                {
+                    _logger.LogInformation("Resource has no Ready Condition and ignoreNoReadyCondition=true so resource is ready: {name}", dr.Key);
+                    dr.Value.Ready = Ready.True;
+                    continue;
+                }
 
                 if (condition?.Fields["status"].StringValue == "True")
                 {

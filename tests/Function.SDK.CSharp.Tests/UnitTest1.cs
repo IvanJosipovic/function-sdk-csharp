@@ -1,5 +1,7 @@
 using Apiextensions.Fn.Proto.V1;
 using EnumsNET;
+using Function.SDK.CSharp.SourceGenerator.Models.platform.example.com;
+using KubernetesCRDModelGen.Models.azure.m.upbound.io;
 using Shouldly;
 
 namespace Function.SDK.CSharp.Example.Tests;
@@ -34,6 +36,11 @@ public class UnitTest1
 
         var desiredResource = new V1beta1ResourceGroup()
         {
+            Metadata = new()
+            {
+                Name = xr.Metadata.Name.Replace("-", ""),
+                NamespaceProperty = xr.Metadata.NamespaceProperty
+            },
             Spec = new()
             {
                 ForProvider = new()
@@ -49,6 +56,11 @@ public class UnitTest1
 
         var desiredResource2 = new V1beta1ResourceGroup()
         {
+            Metadata = new()
+            {
+                Name = xr.Metadata.Name.Replace("-", ""),
+                NamespaceProperty = xr.Metadata.NamespaceProperty
+            },
             Spec = new()
             {
                 ForProvider = new()
