@@ -124,7 +124,7 @@ public class TestRunFunctionService(ILogger<TestRunFunctionService> logger) : Fu
             resp.Desired.AddOrUpdate("container", desiredContainer);
 
             // Get Desired resources and update Status if Ready
-            resp.UpdateDesiredReadyStatus(request, logger, true);
+            resp.UpdateDesiredReadyStatus(request, logger, [$"{V1beta1ProviderConfig.KubeGroup}/{V1beta1ProviderConfig.KubeApiVersion}/{V1beta1ProviderConfig.KubeKind}"]);
 
             return Task.FromResult(resp);
         }
