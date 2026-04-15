@@ -8,6 +8,16 @@ The C# SDK for writing [composition functions](https://docs.crossplane.io/latest
 
 Working example, https://github.com/IvanJosipovic/function-kubemodelrepo
 
+# CSharp Template
+
+[Template Repository](https://github.com/IvanJosipovic/function-template-csharp)
+
+```shell
+dotnet new install function-template-csharp
+
+dotnet new function-csharp -n TheFunction -o c:\repos\func
+```
+
 ## Features
 
 - XRD to Model Generation
