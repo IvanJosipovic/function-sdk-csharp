@@ -2,19 +2,14 @@
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path=".github/workflows/cicd.yml" />
-    <File Path="example/composition.yaml" />
-    <File Path="example/functions.yaml" />
-    <File Path="example/xr.yaml" />
     <File Path="global.json" />
     <File Path="README.md" />
   </Folder>
   <Folder Name="/src/">
-    <Project Path="src/Function.SDK.CSharp.Example/Function.SDK.CSharp.Example.csproj" />
     <Project Path="src/Function.SDK.CSharp.SourceGenerator/Function.SDK.CSharp.SourceGenerator.csproj" />
     <Project Path="src/Function.SDK.CSharp/Function.SDK.CSharp.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/Function.SDK.CSharp.Example.Tests/Function.SDK.CSharp.Example.Tests.csproj" />
     <Project Path="tests/Function.SDK.CSharp.Tests/Function.SDK.CSharp.Tests.csproj" />
   </Folder>
 </Solution>
