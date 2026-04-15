@@ -1,14 +1,7 @@
 using Apiextensions.Fn.Proto.V1;
 using EnumsNET;
 using Function.SDK.CSharp.SourceGenerator.Models.platform.example.com;
-using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
-using Grpc.Core;
-using Grpc.Core.Testing;
-using Grpc.Core.Utils;
-using k8s;
 using KubernetesCRDModelGen.Models.azure.m.upbound.io;
-using Microsoft.Extensions.Logging;
 using Shouldly;
 
 namespace Function.SDK.CSharp.Example.Tests;
@@ -222,45 +215,61 @@ public class UnitTest1
         var desiredResourceResponse = response1.Desired.Resources["rg"];
         desiredResourceResponse.Ready.ShouldBe(Ready.True);
     }
-}
 
-public static class TestExtensions
-{
-    public static RunFunctionRequest GetFunctionRequest()
+    [Fact]
+    public void TestReadyIgnore()
     {
-        var request = new RunFunctionRequest
+        var xr = new V1alpha1XStorageBucket()
         {
-            Observed = new()
+            Metadata = new()
             {
-                Composite = new()
+                Name = "test",
+                NamespaceProperty = "default"
             },
-            Desired = new(),
-            Context = new(),
+            Spec = new()
+            {
+                Parameters = new()
+                {
+                    Location = V1alpha1XStorageBucketSpecParametersLocationEnum.Eastus,
+                    Versioning = true,
+                    Acl = V1alpha1XStorageBucketSpecParametersAclEnum.Private,
+                }
+            }
         };
 
-        return request;
-    }
+        var desiredResource = new V1beta1ProviderConfig()
+        {
+            Spec = new()
+            {
+                Credentials = new()
+                {
+                    Source = new()
+                    {
+                    }
+                }
+            }
+        };
 
-    public static RunFunctionResponse GetTestResponse(this RunFunctionRequest request)
-    {
-        var svc = new RunFunctionService(new LoggerFactory().CreateLogger<RunFunctionService>());
-        var fakeServerCallContext = TestServerCallContext.Create("/apiextensions.fn.proto.v1.FunctionRunnerService/RunFunction", null, DateTime.UtcNow.AddHours(1), [], CancellationToken.None, "127.0.0.1", null, null, (metadata) => TaskUtils.CompletedTask, () => new WriteOptions(), (writeOptions) => { });
+        var observedResource = new V1beta1ProviderConfig()
+        {
+            Spec = new()
+            {
+                Credentials = new()
+                {
+                    Source = new()
+                    {
+                    }
+                }
+            }
+        };
 
-        return svc.RunFunction(request, fakeServerCallContext)
-            .GetAwaiter()
-            .GetResult();
-    }
+        var request = TestExtensions.GetFunctionRequest();
+        request.SetCompositeResource(xr);
+        request.Desired.AddOrUpdate("resource", desiredResource);
+        request.Observed.AddOrUpdate("resource", observedResource);
 
-    public static void SetCompositeResource(this RunFunctionRequest request, IKubernetesObject obj)
-    {
-        var kubeObj = Struct.Parser.ParseJson(KubernetesJson.Serialize(obj));
-        request.Observed.Composite.Resource_ = kubeObj;
-    }
-
-    public static T GetResource<T>(this State state, string key)
-    {
-        var json = JsonFormatter.Default.Format(state.Resources[key].Resource_);
-
-        return KubernetesJson.Deserialize<T>(json);
+        var response1 = request.GetTestResponse();
+        var desiredResourceResponse = response1.Desired.Resources["resource"];
+        desiredResourceResponse.Ready.ShouldBe(Ready.True);
     }
 }
