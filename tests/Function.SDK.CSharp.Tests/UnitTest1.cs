@@ -75,7 +75,7 @@ public class UnitTest1
                     new()
                     {
                         Status = "Ready",
-                        LastTransitionTime = "01/01/2025",
+                        LastTransitionTime = DateTime.SpecifyKind(DateTime.Parse("2025-01-01T08:00:00Z"), DateTimeKind.Utc),
                         Reason = "test",
                         Type = "testType"
                     }
@@ -141,7 +141,7 @@ public class UnitTest1
                     new()
                     {
                         Status = "Ready",
-                        LastTransitionTime = "01/01/2025",
+                        LastTransitionTime = DateTime.SpecifyKind(DateTime.Parse("2025-01-01T08:00:00Z"), DateTimeKind.Utc),
                         Reason = "test",
                         Type = "testType"
                     }
@@ -207,7 +207,7 @@ public class UnitTest1
                 [
                     new()
                     {
-                        LastTransitionTime = "01/01/2025",
+                        LastTransitionTime = DateTime.SpecifyKind(DateTime.Parse("2025-01-01T08:00:00Z"), DateTimeKind.Utc),
                         Reason = "test",
                         Status = "True",
                         Type = "Ready",
