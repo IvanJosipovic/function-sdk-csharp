@@ -25,8 +25,8 @@
 
   <ItemGroup>
     <PackageReference Include="Enums.NET" Version="5.0.0" />
-    <PackageReference Include="Grpc.AspNetCore" Version="2.76.0" />
-    <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.76.0" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.80.0" />
+    <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.80.0" />
     <PackageReference Include="KubernetesClient" Version="19.0.2" />
   </ItemGroup>
 
