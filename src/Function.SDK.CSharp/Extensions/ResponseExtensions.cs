@@ -200,4 +200,21 @@ public static partial class ResponseExtensions
             _logger.LogInformation("All Desired Resources are ready");
         }
     }
+
+    /// <summary>
+    /// Get Desired Resource from the supplied response.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="response"></param>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    public static T? GetDesiredResource<T>(this RunFunctionResponse response, string key)
+    {
+        if (response.Desired.Resources.TryGetValue(key, out var resource))
+        {
+            return resource.GetKubeResource<T>();
+        }
+
+        return default;
+    }
 }

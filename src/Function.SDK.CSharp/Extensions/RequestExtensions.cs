@@ -93,6 +93,7 @@ public static partial class RequestExtensions
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="request"></param>
+    /// <param name="key"></param>
     /// <returns></returns>
     public static T? GetDesiredResource<T>(this RunFunctionRequest request, string key)
     {
