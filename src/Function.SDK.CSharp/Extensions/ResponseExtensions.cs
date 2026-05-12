@@ -146,9 +146,16 @@ public static partial class ResponseExtensions
         rsp.Requirements.Resources[name] = selector;
     }
 
+    /// <summary>
+    /// UpdateDesiredReadyStatus iterates through the desired resources in the response and updates their Ready status based on the observed resources in the request.
+    /// </summary>
+    /// <param name="response">The RunFunctionResponse containing the desired resources.</param>
+    /// <param name="request">The RunFunctionRequest containing the observed resources.</param>
+    /// <param name="_logger">The logger to use for logging information.</param>
+    /// <param name="ignoreNoReadyCondition">An optional array of resource identifiers to ignore if they have no Ready condition.</param>
     public static void UpdateDesiredReadyStatus(this RunFunctionResponse response, RunFunctionRequest request, ILogger _logger, string[]? ignoreNoReadyCondition = null)
     {
-        var observed = request.GetObservedComposedResources();
+        var observed = request.GetObservedResources();
 
         foreach (var dr in response.Desired.Resources.ToDictionary())
         {

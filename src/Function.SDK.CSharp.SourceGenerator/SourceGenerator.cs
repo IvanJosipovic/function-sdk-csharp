@@ -14,11 +14,18 @@ using YamlDotNet.System.Text.Json;
 
 namespace Function.SDK.CSharp.SourceGenerator;
 
+/// <summary>
+/// Source generator for Function.SDK.CSharp. It reads a Kubernetes Custom Resource Definition (CRD) from an additional text file named "xrd.yaml", processes it, and generates C# code based on the OpenAPI schema defined in the CRD. The generated code is added to the compilation during the build process. The generator also logs diagnostic messages for debugging and error handling purposes.
+/// </summary>
 [Generator]
 public class SourceGenerator : IIncrementalGenerator
 {
     private static CodeGenerator codeGenerator;
 
+    /// <summary>
+    /// Initializes the source generator. This method is called by the compiler to set up the generator's pipeline.
+    /// </summary>
+    /// <param name="context">The context for the incremental generator.</param>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
 #if DEBUG

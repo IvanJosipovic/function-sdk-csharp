@@ -42,4 +42,4 @@ dotnet new function-csharp -n TheFunction -o c:\repos\func
     | upbound.io | [Link](https://www.nuget.org/packages/KubernetesCRDModelGen.Models.upbound.io/) |
     | vault.upbound.io | [Link](https://www.nuget.org/packages/KubernetesCRDModelGen.Models.vault.upbound.io/) |
 
-- Supports Crossplane v1.17 or greater
+- Supports Crossplane v2 or greater

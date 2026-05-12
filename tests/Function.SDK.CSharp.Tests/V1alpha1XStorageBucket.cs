@@ -1,12 +1,8 @@
 #nullable enable
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 using k8s;
 using k8s.Models;
-using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
 
 namespace Function.SDK.CSharp.SourceGenerator.Models.platform.example.com;
 /// <summary>StorageBucket is the Schema for the StorageBucket API.</summary>
