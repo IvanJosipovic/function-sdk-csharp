@@ -1,7 +1,5 @@
 using Apiextensions.Fn.Proto.V1;
-using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
-using k8s;
 
 namespace Function.SDK.CSharp;
 
@@ -48,42 +46,35 @@ public static partial class RequestExtensions
         return resp;
     }
 
-    public static T GetKubeResource<T>(this Resource resource)
-    {
-        var json = JsonFormatter.Default.Format(resource.Resource_);
-
-        return KubernetesJson.Deserialize<T>(json);
-    }
-
     /// <summary>
     /// Get Observed Composite Resource from the supplied request.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="request"></param>
-    /// <returns></returns>
+    /// <typeparam name="T">The type of the Kubernetes object.</typeparam>
+    /// <param name="request">The RunFunctionRequest.</param>
+    /// <returns>The Kubernetes object of the specified type.</returns>
     public static T? GetObservedCompositeResource<T>(this RunFunctionRequest request)
     {
         return request.Observed.Composite.GetKubeResource<T>();
     }
 
     /// <summary>
-    /// Get Observed Composed Resources from the supplied request.
+    /// Get Observed Resources from the supplied request.
     /// </summary>
     /// <param name="request">The RunFunctionRequest.</param>
-    /// <returns>A dictionary mapping resource names to ObservedComposed objects.</returns>
+    /// <returns>A dictionary mapping resource names to Observed objects.</returns>
     /// <exception cref="Exception">Throws if conversion using Resource.AsObject fails.</exception>
-    public static IDictionary<string, Resource> GetObservedComposedResources(this RunFunctionRequest request)
+    public static IDictionary<string, Resource> GetObservedResources(this RunFunctionRequest request)
     {
         return request.Observed.Resources.ToDictionary();
     }
 
     /// <summary>
-    /// Get Desired Composed Resources from the supplied request.
+    /// Get Desired Resources from the supplied request.
     /// </summary>
     /// <param name="request">The RunFunctionRequest.</param>
-    /// <returns>A dictionary mapping resource names to ObservedComposed objects.</returns>
+    /// <returns>A dictionary mapping resource names to Desired objects.</returns>
     /// <exception cref="Exception">Throws if conversion using Resource.AsObject fails.</exception>
-    public static IDictionary<string, Resource> GetDesiredComposedResources(this RunFunctionRequest request)
+    public static IDictionary<string, Resource> GetDesiredResources(this RunFunctionRequest request)
     {
         return request.Desired.Resources.ToDictionary();
     }
@@ -91,10 +82,10 @@ public static partial class RequestExtensions
     /// <summary>
     /// Get Desired Resource from the supplied request.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="request"></param>
-    /// <param name="key"></param>
-    /// <returns></returns>
+    /// <typeparam name="T">The type of the Kubernetes object.</typeparam>
+    /// <param name="request">The RunFunctionRequest.</param>
+    /// <param name="key">The key of the resource.</param>
+    /// <returns>The Kubernetes object of the specified type, or null if not found.</returns>
     public static T? GetDesiredResource<T>(this RunFunctionRequest request, string key)
     {
         if (request.Desired.Resources.TryGetValue(key, out var resource))
@@ -108,9 +99,10 @@ public static partial class RequestExtensions
     /// <summary>
     /// Get Observed Resource from the supplied request.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="request"></param>
-    /// <returns></returns>
+    /// <typeparam name="T">The type of the Kubernetes object.</typeparam>
+    /// <param name="request">The RunFunctionRequest.</param>
+    /// <param name="key">The key of the resource.</param>
+    /// <returns>The Kubernetes object of the specified type, or null if not found.</returns>
     public static T? GetObservedResource<T>(this RunFunctionRequest request, string key)
     {
         if (request.Observed.Resources.TryGetValue(key, out var resource))
