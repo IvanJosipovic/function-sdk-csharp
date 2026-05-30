@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KubernetesCRDModelGen.Base" Version="1.6.0" PrivateAssets="all" />
+    <PackageReference Include="KubernetesCRDModelGen.Base" Version="1.6.4" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="4.14.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" PrivateAssets="all" />
     <PackageReference Include="YamlDotNet" Version="17.1.0" PrivateAssets="all" />
