@@ -107,13 +107,7 @@ public static class BuilderExtensions
 
         builder.Logging.AddJsonConsole(options =>
         {
-            options.IncludeScopes = false;
-            options.TimestampFormat = "HH:mm:ssss";
             options.IncludeScopes = true;
-            options.JsonWriterOptions = new()
-            {
-                Indented = true,
-            };
         });
     }
 
