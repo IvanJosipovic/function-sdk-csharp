@@ -16,7 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="Grpc.Core.Testing" Version="2.46.6" />
-    <PackageReference Include="KubernetesCRDModelGen.Models.azure.upbound.io" Version="1.50.0" />
+    <PackageReference Include="KubernetesCRDModelGen.Models.azure.upbound.io" Version="1.54.0" />
     <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.10.0" />
     <PackageReference Include="Microsoft.Testing.Extensions.HangDump" Version="2.3.3" />
     <PackageReference Include="Shouldly" Version="4.3.0" />
