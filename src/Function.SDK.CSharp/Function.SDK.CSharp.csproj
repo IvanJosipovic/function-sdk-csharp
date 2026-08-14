@@ -31,7 +31,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Certificate" Version="9.0.17" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Certificate" Version="10.0.11" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
