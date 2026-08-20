@@ -163,20 +163,22 @@ public static partial class ResponseExtensions
             // can't be ready because it doesn't yet exist
             if (observed.TryGetValue(dr.Key, out Resource? or))
             {
-                // Check if Ready
-                if (dr.Value.Ready == Ready.True)
+                var condition = or.GetCondition("Ready");
+
+                // Preserve an explicitly ready desired resource when the observed
+                // resource has no Ready condition to evaluate.
+                if (dr.Value.Ready == Ready.True && condition == null)
                 {
                     _logger.LogDebug("Ignoring desired resource that already has explicit readiness: {name} {ready}", dr.Key, dr.Value.Ready);
                     continue;
                 }
 
-                // Now we know this resource exists, and not ready
-                _logger.LogDebug("Found desired resource with unknown readiness: {name}", dr.Key);
+                // Re-evaluate readiness from the observed resource on every invocation.
+                // An observed resource may become not ready after previously being ready.
+                _logger.LogDebug("Found desired resource to evaluate readiness: {name}", dr.Key);
 
                 // If this observed resource has a status condition with type: Ready,
                 // status: True, we set its readiness to true.
-                var condition = or.GetCondition("Ready");
-
                 if (ignoreNoReadyCondition != null && condition == null && ignoreNoReadyCondition.Contains($"{or.Resource_.Fields["apiVersion"].StringValue}/{or.Resource_.Fields["kind"].StringValue}"))
                 {
                     _logger.LogInformation("Resource has no Ready Condition and ignoreNoReadyCondition=true so resource is ready: {name}", dr.Key);

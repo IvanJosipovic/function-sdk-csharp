@@ -227,6 +227,103 @@ public class UnitTest1
     }
 
     [Fact]
+    public void TestReadyBecomingFalseAfterPreviouslyBeingTrue()
+    {
+        var xr = new V1alpha1XStorageBucket()
+        {
+            Metadata = new()
+            {
+                Name = "test",
+                NamespaceProperty = "default"
+            },
+            Spec = new()
+            {
+                Parameters = new()
+                {
+                    Location = V1alpha1XStorageBucketSpecParametersLocationEnum.Eastus,
+                    Versioning = true,
+                    Acl = V1alpha1XStorageBucketSpecParametersAclEnum.Private,
+                }
+            }
+        };
+
+        var desiredResource = new V1beta1ResourceGroup()
+        {
+            Spec = new()
+            {
+                ForProvider = new()
+                {
+                    Location = xr.Spec.Parameters.Location.AsString(EnumFormat.EnumMemberValue)
+                }
+            }
+        };
+
+        var readyObservedResource = new V1beta1ResourceGroup()
+        {
+            Spec = new()
+            {
+                ForProvider = new()
+                {
+                    Location = xr.Spec.Parameters.Location.AsString(EnumFormat.EnumMemberValue)
+                }
+            },
+            Status = new()
+            {
+                Conditions =
+                [
+                    new()
+                    {
+                        LastTransitionTime = DateTime.UnixEpoch,
+                        Reason = "test",
+                        Status = "True",
+                        Type = "Ready"
+                    }
+                ]
+            }
+        };
+
+        var notReadyObservedResource = new V1beta1ResourceGroup()
+        {
+            Spec = new()
+            {
+                ForProvider = new()
+                {
+                    Location = xr.Spec.Parameters.Location.AsString(EnumFormat.EnumMemberValue)
+                }
+            },
+            Status = new()
+            {
+                Conditions =
+                [
+                    new()
+                    {
+                        LastTransitionTime = DateTime.UnixEpoch,
+                        Reason = "test",
+                        Status = "False",
+                        Type = "Ready"
+                    }
+                ]
+            }
+        };
+
+        var request1 = TestExtensions.GetFunctionRequest();
+        request1.SetCompositeResource(xr);
+        request1.Desired.AddOrUpdate("rg", desiredResource);
+        request1.Observed.AddOrUpdate("rg", readyObservedResource);
+
+        var response1 = request1.GetTestResponse();
+        response1.Desired.Resources["rg"].Ready.ShouldBe(Ready.True);
+
+        var request2 = TestExtensions.GetFunctionRequest();
+        request2.SetCompositeResource(xr);
+        request2.Desired.MergeFrom(response1.Desired);
+        request2.Observed.AddOrUpdate("rg", notReadyObservedResource);
+
+        var response2 = request2.GetTestResponse();
+        response2.Desired.Resources["rg"].Ready.ShouldBe(Ready.False);
+    }
+
+    [Fact]
     public void TestReadyIgnore()
     {
         var xr = new V1alpha1XStorageBucket()
