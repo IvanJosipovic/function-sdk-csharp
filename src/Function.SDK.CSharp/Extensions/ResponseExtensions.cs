@@ -177,6 +177,11 @@ public static partial class ResponseExtensions
                 // An observed resource may become not ready after previously being ready.
                 _logger.LogDebug("Found desired resource to evaluate readiness: {name}", dr.Key);
 
+                // A managed resource can retain Ready=True while its latest
+                // reconciliation has failed. Treat an explicit Synced=False
+                // condition as unhealthy as well.
+                var syncFailed = or.GetCondition("Synced")?.Fields["status"].StringValue == "False";
+
                 // If this observed resource has a status condition with type: Ready,
                 // status: True, we set its readiness to true.
                 if (ignoreNoReadyCondition != null && condition == null && ignoreNoReadyCondition.Contains($"{or.Resource_.Fields["apiVersion"].StringValue}/{or.Resource_.Fields["kind"].StringValue}"))
@@ -186,7 +191,7 @@ public static partial class ResponseExtensions
                     continue;
                 }
 
-                if (condition?.Fields["status"].StringValue == "True")
+                if (!syncFailed && condition?.Fields["status"].StringValue == "True")
                 {
                     _logger.LogInformation("Automatically determined that composed resource is ready: {name}", dr.Key);
                     dr.Value.Ready = Ready.True;

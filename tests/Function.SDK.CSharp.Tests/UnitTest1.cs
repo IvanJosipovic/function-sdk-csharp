@@ -323,6 +323,103 @@ public class UnitTest1
         response2.Desired.Resources["rg"].Ready.ShouldBe(Ready.False);
     }
 
+    [Theory]
+    [InlineData(true, true, true)]
+    [InlineData(false, true, false)]
+    [InlineData(true, false, false)]
+    [InlineData(false, false, false)]
+    public void TestReadyReflectsSyncAndReadyHealth(bool synced, bool ready, bool expectedReady)
+    {
+        var xr = new V1alpha1XStorageBucket()
+        {
+            Metadata = new()
+            {
+                Name = "test",
+                NamespaceProperty = "default"
+            },
+            Spec = new()
+            {
+                Parameters = new()
+                {
+                    Location = V1alpha1XStorageBucketSpecParametersLocationEnum.Eastus,
+                    Versioning = true,
+                    Acl = V1alpha1XStorageBucketSpecParametersAclEnum.Private,
+                }
+            }
+        };
+
+        var desiredResource = new V1beta1ResourceGroup
+        {
+            Spec = new()
+            {
+                ForProvider = new()
+                {
+                    Location = xr.Spec.Parameters.Location.AsString(EnumFormat.EnumMemberValue)
+                }
+            }
+        };
+
+        var healthyObservedResource = new V1beta1ResourceGroup
+        {
+            Spec = new()
+            {
+                ForProvider = new()
+                {
+                    Location = xr.Spec.Parameters.Location.AsString(EnumFormat.EnumMemberValue)
+                }
+            },
+            Status = new()
+            {
+                Conditions =
+                [
+                    new() { Type = "Ready", Status = "True", Reason = "Available", LastTransitionTime = DateTime.UnixEpoch },
+                    new() { Type = "Synced", Status = "True", Reason = "ReconcileSuccess", LastTransitionTime = DateTime.UnixEpoch },
+                    new() { Type = "LastAsyncOperation", Status = "True", Reason = "Success", LastTransitionTime = DateTime.UnixEpoch }
+                ]
+            }
+        };
+
+        var failedObservedResource = new V1beta1ResourceGroup
+        {
+            Spec = new()
+            {
+                ForProvider = new()
+                {
+                    Location = xr.Spec.Parameters.Location.AsString(EnumFormat.EnumMemberValue)
+                }
+            },
+            Status = new()
+            {
+                Conditions =
+                [
+                    new() { Type = "Ready", Status = "True", Reason = "Available", LastTransitionTime = DateTime.UnixEpoch },
+                    new() { Type = "Synced", Status = "False", Reason = "ReconcileError", LastTransitionTime = DateTime.UnixEpoch },
+                    new() { Type = "LastAsyncOperation", Status = "False", Reason = "AsyncUpdateFailure", LastTransitionTime = DateTime.UnixEpoch }
+                ]
+            }
+        };
+
+        healthyObservedResource.Status!.Conditions![0].Status = ready ? "True" : "False";
+        failedObservedResource.Status!.Conditions![0].Status = ready ? "True" : "False";
+        healthyObservedResource.Status!.Conditions![1].Status = synced ? "True" : "False";
+        failedObservedResource.Status!.Conditions![1].Status = synced ? "True" : "False";
+
+        var request1 = TestExtensions.GetFunctionRequest();
+        request1.SetCompositeResource(xr);
+        request1.Desired.AddOrUpdate("rg", desiredResource);
+        request1.Observed.AddOrUpdate("rg", healthyObservedResource);
+        var response1 = request1.GetTestResponse();
+        response1.Desired.Resources["rg"].Ready.ShouldBe(expectedReady ? Ready.True : Ready.False);
+
+        var request2 = TestExtensions.GetFunctionRequest();
+        request2.SetCompositeResource(xr);
+        request2.Desired.MergeFrom(response1.Desired);
+        request2.Observed.AddOrUpdate("rg", failedObservedResource);
+
+        var response2 = request2.GetTestResponse();
+        response2.Desired.Resources["rg"].Ready.ShouldBe(expectedReady ? Ready.True : Ready.False);
+    }
+
     [Fact]
     public void TestReadyIgnore()
     {
