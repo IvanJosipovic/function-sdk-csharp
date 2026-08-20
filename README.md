@@ -12,6 +12,8 @@ Working example, https://github.com/IvanJosipovic/function-kubemodelrepo
 
 [Template Repository](https://github.com/IvanJosipovic/function-template-csharp)
 
+[Download .Net 10 SDK](https://dotnet.microsoft.com/en-us/download)
+
 ```shell
 dotnet new install function-template-csharp
 
@@ -24,7 +26,7 @@ dotnet new function-csharp -n TheFunction -o c:\repos\func
   - Modify the xrd.yaml and models will be automatically generated
 - CRD to Model Generation
   - Add crd.yaml(s) to the project and models will be automatically generated
-  - Most Crossplane Providers already published [KubernetesCRDModelGen](https://github.com/IvanJosipovic/KubernetesCRDModelGen?tab=readme-ov-file#published-packages)
+  - Most Crossplane Providers already published [KubernetesCRDModelGen.Models](https://github.com/IvanJosipovic/KubernetesCRDModelGen.Models#generated-packages)
 
     | Group | NuGet |
     | --- | --- |
