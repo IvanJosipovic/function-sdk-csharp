@@ -24,7 +24,7 @@ dotnet new function-csharp -n TheFunction -o c:\repos\func
   - Modify the xrd.yaml and models will be automatically generated
 - CRD to Model Generation
   - Add crd.yaml(s) to the project and models will be automatically generated
-  - Most Crossplane Providers already published [KubernetesCRDModelGen.Models]([https://github.com/IvanJosipovic/KubernetesCRDModelGen?tab=readme-ov-file#published-packages](https://github.com/IvanJosipovic/KubernetesCRDModelGen.Models#generated-packages))
+  - Most Crossplane Providers already published [KubernetesCRDModelGen.Models](https://github.com/IvanJosipovic/KubernetesCRDModelGen.Models#generated-packages)
 
     | Group | NuGet |
     | --- | --- |
