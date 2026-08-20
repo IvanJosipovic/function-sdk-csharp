@@ -152,22 +152,23 @@ public static partial class ResponseExtensions
     /// <param name="response">The RunFunctionResponse containing the desired resources.</param>
     /// <param name="request">The RunFunctionRequest containing the observed resources.</param>
     /// <param name="_logger">The logger to use for logging information.</param>
-    /// <param name="ignoreNoReadyCondition">An optional array of resource identifiers to ignore if they have no Ready condition.</param>
+    /// <param name="ignoreNoReadyCondition">An optional array of resource identifiers to mark ready when they have no Ready condition and no Synced=False condition.</param>
     public static void UpdateDesiredReadyStatus(this RunFunctionResponse response, RunFunctionRequest request, ILogger _logger, string[]? ignoreNoReadyCondition = null)
     {
         var observed = request.GetObservedResources();
 
         foreach (var dr in response.Desired.Resources.ToDictionary())
         {
-            // If this desired resource doesn't exist in the observed resources, it
-            // can't be ready because it doesn't yet exist
+            // If this desired resource does not exist in the observed resources,
+            // there is no observed readiness to derive, so leave it unchanged.
             if (observed.TryGetValue(dr.Key, out Resource? or))
             {
                 var condition = or.GetCondition("Ready");
+                var syncFailed = or.GetCondition("Synced")?.Fields["status"].StringValue == "False";
 
                 // Preserve an explicitly ready desired resource when the observed
-                // resource has no Ready condition to evaluate.
-                if (dr.Value.Ready == Ready.True && condition == null)
+                // resource has no Ready condition and no synchronization failure.
+                if (!syncFailed && dr.Value.Ready == Ready.True && condition == null)
                 {
                     _logger.LogDebug("Ignoring desired resource that already has explicit readiness: {name} {ready}", dr.Key, dr.Value.Ready);
                     continue;
@@ -177,16 +178,17 @@ public static partial class ResponseExtensions
                 // An observed resource may become not ready after previously being ready.
                 _logger.LogDebug("Found desired resource to evaluate readiness: {name}", dr.Key);
 
-                // If this observed resource has a status condition with type: Ready,
-                // status: True, we set its readiness to true.
-                if (ignoreNoReadyCondition != null && condition == null && ignoreNoReadyCondition.Contains($"{or.Resource_.Fields["apiVersion"].StringValue}/{or.Resource_.Fields["kind"].StringValue}"))
+                // A managed resource can retain Ready=True while its latest
+                // reconciliation has failed. Synced=False takes precedence over
+                // Ready=True and over the no-Ready-condition override below.
+                if (!syncFailed && ignoreNoReadyCondition != null && condition == null && ignoreNoReadyCondition.Contains($"{or.Resource_.Fields["apiVersion"].StringValue}/{or.Resource_.Fields["kind"].StringValue}"))
                 {
                     _logger.LogInformation("Resource has no Ready Condition and ignoreNoReadyCondition=true so resource is ready: {name}", dr.Key);
                     dr.Value.Ready = Ready.True;
                     continue;
                 }
 
-                if (condition?.Fields["status"].StringValue == "True")
+                if (!syncFailed && condition?.Fields["status"].StringValue == "True")
                 {
                     _logger.LogInformation("Automatically determined that composed resource is ready: {name}", dr.Key);
                     dr.Value.Ready = Ready.True;
