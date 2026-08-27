@@ -255,12 +255,14 @@ public static partial class ResponseExtensions
     /// <param name="by">The resource that uses the protected resource.</param>
     /// <param name="of">The resource being protected.</param>
     /// <param name="replayDeletion">Whether deletion of the protected resource is replayed after the usage is removed.</param>
+    /// <param name="namespace">The namespace of the Usage resource.</param>
     /// <exception cref="InvalidOperationException">Thrown when either resource has no metadata name.</exception>
     public static void AddDesiredUsage(
         this RunFunctionResponse response,
         IKubernetesObject<V1ObjectMeta> by,
         IKubernetesObject<V1ObjectMeta> of,
-        bool replayDeletion = true)
+        bool replayDeletion = true,
+        string? @namespace = null)
     {
         ArgumentNullException.ThrowIfNull(response);
         ArgumentNullException.ThrowIfNull(by);
@@ -278,6 +280,10 @@ public static partial class ResponseExtensions
 
         var usage = new V1beta1Usage
         {
+            Metadata = new()
+            {
+                NamespaceProperty = @namespace
+            },
             Spec = new()
             {
                 ReplayDeletion = replayDeletion,
@@ -291,7 +297,11 @@ public static partial class ResponseExtensions
                 {
                     ApiVersion = of.ApiVersion,
                     Kind = of.Kind,
-                    ResourceRef = new() { Name = ofName }
+                    ResourceRef = new()
+                    {
+                        Name = ofName,
+                        Namespace = of.Namespace()
+                    }
                 }
             }
         };

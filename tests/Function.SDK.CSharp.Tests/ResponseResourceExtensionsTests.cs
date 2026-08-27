@@ -159,6 +159,21 @@ public class ResponseResourceExtensionsTests
     }
 
     [Fact]
+    public void WhenAddingUsageForCrossNamespaceResourceThenNamespacesArePopulated()
+    {
+        var response = CreateResponse();
+        var by = CreateConfigMap("consumer");
+        by.Metadata.NamespaceProperty = "consumer-namespace";
+        var of = new V1Secret { Metadata = new() { Name = "provider", NamespaceProperty = "provider-namespace" } };
+
+        response.AddDesiredUsage(by, of, @namespace: "consumer-namespace");
+
+        var usage = response.GetDesiredResources<V1beta1Usage>().Single();
+        (usage.Metadata!.NamespaceProperty, usage.Spec!.Of!.ResourceRef!.Namespace)
+            .ShouldBe(("consumer-namespace", "provider-namespace"));
+    }
+
+    [Fact]
     public void WhenAddingUsageWithUnnamedResourceThenInvalidOperationIsThrown()
     {
         var response = CreateResponse();
