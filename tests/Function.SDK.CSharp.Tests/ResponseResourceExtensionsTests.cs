@@ -31,6 +31,25 @@ public class ResponseResourceExtensionsTests
     }
 
     [Fact]
+    public void WhenAddingEqualNamesInDifferentNamespacesThenResourcesRemainDistinct()
+    {
+        var response = CreateResponse();
+        var first = CreateConfigMap("example");
+        first.Metadata.NamespaceProperty = "first";
+        var second = CreateConfigMap("example");
+        second.Metadata.NamespaceProperty = "second";
+
+        response.AddDesiredResource(first);
+        response.AddDesiredResource(second);
+
+        response.Desired.Resources.Keys.Order().ShouldBe(
+        [
+            "v1/ConfigMap/first/example",
+            "v1/ConfigMap/second/example"
+        ]);
+    }
+
+    [Fact]
     public void WhenAddingResourceWithoutTypeIdentityThenIdentityIsInitialized()
     {
         var response = CreateResponse();

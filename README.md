@@ -111,7 +111,13 @@ Canonical resource keys use the following format:
 {apiVersion}/{kind}/{key}
 ```
 
-For grouped resources, `apiVersion` includes the group, for example `apps/v1/Deployment/example`. Core resources use keys such as `v1/ConfigMap/settings`.
+Namespaced resources include their namespace:
+
+```text
+{apiVersion}/{kind}/{namespace}/{key}
+```
+
+For grouped resources, `apiVersion` includes the group, for example `apps/v1/Deployment/default/example`. Core resources use keys such as `v1/ConfigMap/default/settings`. Cluster-scoped resources continue to use `{apiVersion}/{kind}/{key}`.
 
 ```csharp
 response.AddDesiredResource(new V1ConfigMap

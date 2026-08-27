@@ -1,4 +1,5 @@
 using k8s;
+using k8s.Models;
 
 namespace Function.SDK.CSharp;
 
@@ -28,9 +29,13 @@ internal static class KubernetesResourceIdentity
         return CreateKey(identity.ApiVersion, identity.Kind, key);
     }
 
-    internal static string CreateKey(IKubernetesObject resource, string key)
+    internal static string CreateKey(IKubernetesObject<V1ObjectMeta> resource, string key)
     {
-        return CreateKey(resource.ApiVersion, resource.Kind, key);
+        var resourceNamespace = resource.Namespace();
+
+        return string.IsNullOrEmpty(resourceNamespace)
+            ? CreateKey(resource.ApiVersion, resource.Kind, key)
+            : $"{resource.ApiVersion}/{resource.Kind}/{resourceNamespace}/{key}";
     }
 
     private static string CreateKey(string apiVersion, string kind, string key)
