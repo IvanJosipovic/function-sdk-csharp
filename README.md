@@ -98,7 +98,7 @@ var configMaps = request.GetObservedResources<V1ConfigMap>();
 | `NormalF(message, args)` | Adds a formatted normal result to the response. |
 | `SetOutput(output)` | Sets operation output from a `Dictionary<string, object>` or protobuf `Struct`. |
 | `RequireResources(...)` | Requests resources by name or labels for the next function invocation. |
-| `UpdateDesiredReadyStatus(...)` | Updates desired readiness from observed `Ready` and `Synced` conditions. Types passed through `ignoreNoReadyCondition` are treated as ready when both conditions are absent. |
+| `UpdateDesiredReadyStatus(...)` | Updates desired readiness from observed `Ready` and `Synced` conditions. Types passed through `ignoreNoReadyCondition` are treated as ready when no `Ready` condition exists and no `Synced=False` condition exists, including when `Synced=True`. |
 | `AddDesiredResource(resource, key)` | Adds or merges a desired Kubernetes resource using a canonical key. The optional key is used when `metadata.name` is absent. |
 | `AddDesiredUsage(by, of, replayDeletion)` | Adds a Crossplane `Usage` that protects one desired resource while another uses it. |
 | `GetDesiredResource<T>(key)` | Gets a desired Kubernetes resource using its canonical API version, kind, and key. |
