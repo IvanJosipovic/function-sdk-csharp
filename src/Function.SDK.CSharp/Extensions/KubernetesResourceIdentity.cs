@@ -5,8 +5,14 @@ namespace Function.SDK.CSharp;
 internal static class KubernetesResourceIdentity
 {
     internal static (string ApiVersion, string Kind) Get<T>()
+        where T : IKubernetesObject
     {
-        var metadata = typeof(T).GetKubernetesTypeMetadata();
+        return Get(typeof(T));
+    }
+
+    internal static (string ApiVersion, string Kind) Get(Type resourceType)
+    {
+        var metadata = resourceType.GetKubernetesTypeMetadata();
         var apiVersion = string.IsNullOrEmpty(metadata.Group)
             ? metadata.ApiVersion
             : $"{metadata.Group}/{metadata.ApiVersion}";
@@ -15,6 +21,7 @@ internal static class KubernetesResourceIdentity
     }
 
     internal static string CreateKey<T>(string key)
+        where T : IKubernetesObject
     {
         var identity = Get<T>();
 

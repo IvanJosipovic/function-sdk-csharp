@@ -155,10 +155,14 @@ public static partial class ResponseExtensions
     /// <param name="response">The RunFunctionResponse containing the desired resources.</param>
     /// <param name="request">The RunFunctionRequest containing the observed resources.</param>
     /// <param name="_logger">The logger to use for logging information.</param>
-    /// <param name="ignoreNoReadyCondition">An optional array of resource identifiers to mark ready when they have no Ready condition and no Synced=False condition.</param>
-    public static void UpdateDesiredReadyStatus(this RunFunctionResponse response, RunFunctionRequest request, ILogger _logger, string[]? ignoreNoReadyCondition = null)
+    /// <param name="ignoreNoReadyCondition">Optional types implementing <see cref="IKubernetesObject"/> to mark ready when they have no Ready condition and no Synced=False condition.</param>
+    public static void UpdateDesiredReadyStatus(this RunFunctionResponse response, RunFunctionRequest request, ILogger _logger, System.Type[]? ignoreNoReadyCondition = null)
     {
         var observed = request.GetObservedResources();
+        var ignoredResourceTypes = ignoreNoReadyCondition?
+            .Select(KubernetesResourceIdentity.Get)
+            .Select(static identity => $"{identity.ApiVersion}/{identity.Kind}")
+            .ToHashSet(StringComparer.Ordinal);
 
         foreach (var dr in response.Desired.Resources.ToDictionary())
         {
@@ -184,7 +188,7 @@ public static partial class ResponseExtensions
                 // A managed resource can retain Ready=True while its latest
                 // reconciliation has failed. Synced=False takes precedence over
                 // Ready=True and over the no-Ready-condition override below.
-                if (!syncFailed && ignoreNoReadyCondition != null && condition == null && ignoreNoReadyCondition.Contains($"{or.Resource_.Fields["apiVersion"].StringValue}/{or.Resource_.Fields["kind"].StringValue}"))
+                if (!syncFailed && ignoredResourceTypes != null && condition == null && ignoredResourceTypes.Contains($"{or.Resource_.Fields["apiVersion"].StringValue}/{or.Resource_.Fields["kind"].StringValue}"))
                 {
                     _logger.LogInformation("Resource has no Ready Condition and ignoreNoReadyCondition=true so resource is ready: {name}", dr.Key);
                     dr.Value.Ready = Ready.True;
