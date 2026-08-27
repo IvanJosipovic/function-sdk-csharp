@@ -1,5 +1,7 @@
 using Apiextensions.Fn.Proto.V1;
 using Google.Protobuf.WellKnownTypes;
+using k8s;
+using k8s.Models;
 
 namespace Function.SDK.CSharp;
 
@@ -104,13 +106,44 @@ public static partial class RequestExtensions
     /// <param name="key">The key of the resource.</param>
     /// <returns>The Kubernetes object of the specified type, or null if not found.</returns>
     public static T? GetObservedResource<T>(this RunFunctionRequest request, string key)
+        where T : IKubernetesObject<V1ObjectMeta>
     {
-        if (request.Observed.Resources.TryGetValue(key, out var resource))
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+
+        var resourceKey = KubernetesResourceIdentity.CreateKey<T>(key);
+        if (request.Observed.Resources.TryGetValue(resourceKey, out var resource))
         {
             return resource.GetKubeResource<T>();
         }
 
         return default;
+    }
+
+    /// <summary>
+    /// Gets all observed resources of the requested Kubernetes type.
+    /// </summary>
+    /// <typeparam name="T">The Kubernetes resource type.</typeparam>
+    /// <param name="request">The request containing observed resources.</param>
+    /// <returns>Observed resources whose API version and kind match the requested type.</returns>
+    public static IEnumerable<T> GetObservedResources<T>(this RunFunctionRequest request)
+        where T : IKubernetesObject<V1ObjectMeta>
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var identity = KubernetesResourceIdentity.Get<T>();
+        foreach (var resource in request.Observed.Resources.Values)
+        {
+            if (!resource.Resource_.Fields.TryGetValue("apiVersion", out var apiVersion)
+                || !resource.Resource_.Fields.TryGetValue("kind", out var kind)
+                || !string.Equals(apiVersion.StringValue, identity.ApiVersion, StringComparison.Ordinal)
+                || !string.Equals(kind.StringValue, identity.Kind, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            yield return resource.GetKubeResource<T>();
+        }
     }
 
     /// <summary>

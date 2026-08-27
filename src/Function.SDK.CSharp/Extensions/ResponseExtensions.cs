@@ -1,6 +1,9 @@
 using System.Text.Json;
 using Apiextensions.Fn.Proto.V1;
 using Google.Protobuf.WellKnownTypes;
+using k8s;
+using k8s.Models;
+using KubernetesCRDModelGen.Models.protection.crossplane.io;
 
 namespace Function.SDK.CSharp;
 
@@ -152,10 +155,14 @@ public static partial class ResponseExtensions
     /// <param name="response">The RunFunctionResponse containing the desired resources.</param>
     /// <param name="request">The RunFunctionRequest containing the observed resources.</param>
     /// <param name="_logger">The logger to use for logging information.</param>
-    /// <param name="ignoreNoReadyCondition">An optional array of resource identifiers to mark ready when they have no Ready condition and no Synced=False condition.</param>
-    public static void UpdateDesiredReadyStatus(this RunFunctionResponse response, RunFunctionRequest request, ILogger _logger, string[]? ignoreNoReadyCondition = null)
+    /// <param name="ignoreNoReadyCondition">Optional types implementing <see cref="IKubernetesObject"/> to mark ready when they have no Ready condition and no Synced=False condition.</param>
+    public static void UpdateDesiredReadyStatus(this RunFunctionResponse response, RunFunctionRequest request, ILogger _logger, System.Type[]? ignoreNoReadyCondition = null)
     {
         var observed = request.GetObservedResources();
+        var ignoredResourceTypes = ignoreNoReadyCondition?
+            .Select(KubernetesResourceIdentity.Get)
+            .Select(static identity => $"{identity.ApiVersion}/{identity.Kind}")
+            .ToHashSet(StringComparer.Ordinal);
 
         foreach (var dr in response.Desired.Resources.ToDictionary())
         {
@@ -181,7 +188,7 @@ public static partial class ResponseExtensions
                 // A managed resource can retain Ready=True while its latest
                 // reconciliation has failed. Synced=False takes precedence over
                 // Ready=True and over the no-Ready-condition override below.
-                if (!syncFailed && ignoreNoReadyCondition != null && condition == null && ignoreNoReadyCondition.Contains($"{or.Resource_.Fields["apiVersion"].StringValue}/{or.Resource_.Fields["kind"].StringValue}"))
+                if (!syncFailed && ignoredResourceTypes != null && condition == null && ignoredResourceTypes.Contains($"{or.Resource_.Fields["apiVersion"].StringValue}/{or.Resource_.Fields["kind"].StringValue}"))
                 {
                     _logger.LogInformation("Resource has no Ready Condition and ignoreNoReadyCondition=true so resource is ready: {name}", dr.Key);
                     dr.Value.Ready = Ready.True;
@@ -213,19 +220,203 @@ public static partial class ResponseExtensions
     }
 
     /// <summary>
-    /// Get Desired Resource from the supplied response.
+    /// Adds or updates a desired Kubernetes resource using its canonical resource key.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="response"></param>
-    /// <param name="key"></param>
-    /// <returns></returns>
-    public static T? GetDesiredResource<T>(this RunFunctionResponse response, string key)
+    /// <param name="response">The response whose desired state will be updated.</param>
+    /// <param name="resource">The Kubernetes resource to add or update.</param>
+    /// <param name="key">A fallback key to use when the resource has no metadata name.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the resource has no metadata name and no key is provided.</exception>
+    public static void AddDesiredResource(
+        this RunFunctionResponse response,
+        IKubernetesObject<V1ObjectMeta> resource,
+        string? key = null)
     {
-        if (response.Desired.Resources.TryGetValue(key, out var resource))
+        ArgumentNullException.ThrowIfNull(response);
+        ArgumentNullException.ThrowIfNull(resource);
+
+        var name = resource.Name();
+        if (string.IsNullOrWhiteSpace(name) && string.IsNullOrWhiteSpace(key))
+        {
+            throw new InvalidOperationException("Resource name is missing and no fallback key was provided.");
+        }
+
+        InitializeKubernetesIdentity(resource);
+
+        var resourceKey = KubernetesResourceIdentity.CreateKey(
+            resource,
+            string.IsNullOrWhiteSpace(name) ? key! : name);
+        response.Desired.AddOrUpdate(resourceKey, resource);
+    }
+
+    /// <summary>
+    /// Adds a Crossplane Usage that protects one desired resource while another resource uses it.
+    /// </summary>
+    /// <param name="response">The response whose desired state will be updated.</param>
+    /// <param name="by">The resource that uses the protected resource.</param>
+    /// <param name="of">The resource being protected.</param>
+    /// <param name="replayDeletion">Whether deletion of the protected resource is replayed after the usage is removed.</param>
+    /// <param name="namespace">The namespace of the Usage resource.</param>
+    /// <exception cref="InvalidOperationException">Thrown when either resource has no metadata name.</exception>
+    public static void AddDesiredUsage(
+        this RunFunctionResponse response,
+        IKubernetesObject<V1ObjectMeta> by,
+        IKubernetesObject<V1ObjectMeta> of,
+        bool replayDeletion = true,
+        string? @namespace = null)
+    {
+        ArgumentNullException.ThrowIfNull(response);
+        ArgumentNullException.ThrowIfNull(by);
+        ArgumentNullException.ThrowIfNull(of);
+
+        InitializeKubernetesIdentity(by);
+        InitializeKubernetesIdentity(of);
+
+        var byName = by.Name();
+        var ofName = of.Name();
+        if (string.IsNullOrWhiteSpace(byName) || string.IsNullOrWhiteSpace(ofName))
+        {
+            throw new InvalidOperationException("Both the using and protected resources must have metadata names.");
+        }
+
+        var usage = new V1beta1Usage
+        {
+            Metadata = new()
+            {
+                NamespaceProperty = @namespace
+            },
+            Spec = new()
+            {
+                ReplayDeletion = replayDeletion,
+                By = new()
+                {
+                    ApiVersion = by.ApiVersion,
+                    Kind = by.Kind,
+                    ResourceRef = new() { Name = byName }
+                },
+                Of = new()
+                {
+                    ApiVersion = of.ApiVersion,
+                    Kind = of.Kind,
+                    ResourceRef = new()
+                    {
+                        Name = ofName,
+                        Namespace = of.Namespace()
+                    }
+                }
+            }
+        };
+
+        var usageKey = $"{by.ApiVersion}-{by.Kind}-{byName}-{of.ApiVersion}-{of.Kind}-{ofName}";
+        response.AddDesiredResource(usage, usageKey);
+    }
+
+    /// <summary>
+    /// Gets a desired resource of the requested Kubernetes type.
+    /// </summary>
+    /// <typeparam name="T">The Kubernetes resource type.</typeparam>
+    /// <param name="response">The response containing desired resources.</param>
+    /// <param name="key">The key of the resource.</param>
+    /// <returns>The desired resource, or null when no matching resource exists.</returns>
+    public static T? GetDesiredResource<T>(this RunFunctionResponse response, string key)
+        where T : IKubernetesObject<V1ObjectMeta>
+    {
+        ArgumentNullException.ThrowIfNull(response);
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+
+        var resourceKey = KubernetesResourceIdentity.CreateKey<T>(key);
+        if (response.Desired.Resources.TryGetValue(resourceKey, out var resource))
         {
             return resource.GetKubeResource<T>();
         }
 
         return default;
     }
+
+    /// <summary>
+    /// Gets all desired resources of the requested Kubernetes type.
+    /// </summary>
+    /// <typeparam name="T">The Kubernetes resource type.</typeparam>
+    /// <param name="response">The response containing desired resources.</param>
+    /// <returns>Desired resources whose API version and kind match the requested type.</returns>
+    public static IEnumerable<T> GetDesiredResources<T>(this RunFunctionResponse response)
+        where T : IKubernetesObject<V1ObjectMeta>
+    {
+        ArgumentNullException.ThrowIfNull(response);
+
+        var identity = KubernetesResourceIdentity.Get<T>();
+        foreach (var resource in response.Desired.Resources.Values)
+        {
+            if (!resource.Resource_.Fields.TryGetValue("apiVersion", out var apiVersion)
+                || !resource.Resource_.Fields.TryGetValue("kind", out var kind)
+                || !string.Equals(apiVersion.StringValue, identity.ApiVersion, StringComparison.Ordinal)
+                || !string.Equals(kind.StringValue, identity.Kind, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            yield return resource.GetKubeResource<T>();
+        }
+    }
+
+    /// <summary>
+    /// Validates that desired Kubernetes resource names are RFC 1123 DNS labels.
+    /// </summary>
+    /// <param name="response">The response containing desired resources to validate.</param>
+    /// <exception cref="ArgumentException">Thrown when a desired resource has an invalid metadata name.</exception>
+    public static void ValidateKubeResourceNames(this RunFunctionResponse response)
+    {
+        ArgumentNullException.ThrowIfNull(response);
+
+        foreach (var resource in response.Desired.Resources)
+        {
+            if (!resource.Value.Resource_.Fields.TryGetValue("metadata", out var metadata)
+                || metadata.StructValue is not { } metadataStruct
+                || !metadataStruct.Fields.TryGetValue("name", out var name)
+                || string.IsNullOrEmpty(name.StringValue))
+            {
+                continue;
+            }
+
+            var resourceName = name.StringValue;
+            if (IsRfc1123DnsLabel(resourceName))
+            {
+                continue;
+            }
+
+            resource.Value.Resource_.Fields.TryGetValue("kind", out var kind);
+            var resourceKind = string.IsNullOrEmpty(kind?.StringValue) ? "unknown" : kind.StringValue;
+
+            throw new ArgumentException(
+                $"Resource '{resource.Key}' (kind '{resourceKind}') has invalid metadata.name '{resourceName}'. "
+                + "Expected an RFC 1123 DNS label: 1-63 lowercase alphanumeric or '-' characters, starting and ending with an alphanumeric character.",
+                nameof(response));
+        }
+    }
+
+    private static bool IsRfc1123DnsLabel(string value)
+    {
+        if (value.Length is < 1 or > 63 || !char.IsAsciiLetterOrDigit(value[0]) || !char.IsAsciiLetterOrDigit(value[^1]))
+        {
+            return false;
+        }
+
+        foreach (var character in value)
+        {
+            if (!(char.IsAsciiLetterLower(character) || char.IsAsciiDigit(character) || character == '-'))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static void InitializeKubernetesIdentity(IKubernetesObject resource)
+    {
+        if (string.IsNullOrEmpty(resource.ApiVersion) || string.IsNullOrEmpty(resource.Kind))
+        {
+            resource.Initialize();
+        }
+    }
+
 }
