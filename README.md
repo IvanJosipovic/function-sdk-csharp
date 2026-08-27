@@ -45,3 +45,103 @@ dotnet new function-csharp -n TheFunction -o c:\repos\func
     | vault.upbound.io | [Link](https://www.nuget.org/packages/KubernetesCRDModelGen.Models.vault.upbound.io/) |
 
 - Supports Crossplane v2 or greater
+
+## Extensions
+
+All extensions are available from the `Function.SDK.CSharp` namespace.
+
+### Application setup
+
+| Extension | Description |
+| --- | --- |
+| `ConfigureFunction(WebApplicationBuilder, string[])` | Configures the gRPC function host, HTTP/2, TLS, logging, and reflection endpoints. |
+| `MapFunctionService<TService>(WebApplication)` | Maps a `FunctionRunnerServiceBase` implementation and gRPC reflection service. |
+
+```csharp
+var builder = WebApplication.CreateSlimBuilder(args);
+builder.ConfigureFunction(args);
+
+var app = builder.Build();
+app.MapFunctionService<RunFunctionService>();
+
+await app.RunAsync();
+```
+
+### Request extensions
+
+| Extension | Description |
+| --- | --- |
+| `To()` | Creates a response from a request using the default one-minute TTL and copies desired state and context. |
+| `To(Duration)` | Creates a response using a custom TTL. |
+| `GetObservedCompositeResource<T>()` | Deserializes the observed composite resource as `T`. |
+| `GetObservedResources()` | Returns the raw observed resource dictionary. |
+| `GetObservedResource<T>(key)` | Gets an observed Kubernetes resource using its canonical API version, kind, and key. |
+| `GetObservedResources<T>()` | Enumerates observed resources matching the API version and kind of `T`. |
+| `GetDesiredResources()` | Returns the raw desired resource dictionary from the request. |
+| `GetDesiredResource<T>(key)` | Deserializes a desired request resource using its existing dictionary key. |
+| `GetRequiredResource<T>(key)` | Deserializes all required resources registered under a key. |
+
+```csharp
+var response = request.To();
+var composite = request.GetObservedCompositeResource<V1alpha1Example>();
+var observed = request.GetObservedResource<V1ConfigMap>("settings");
+var configMaps = request.GetObservedResources<V1ConfigMap>();
+```
+
+### Response extensions
+
+| Extension | Description |
+| --- | --- |
+| `Fatal(message)` | Adds a fatal result to the response. |
+| `Warning(message)` | Adds a warning result to the response. |
+| `Normal(message)` | Adds a normal result to the response. |
+| `NormalF(message, args)` | Adds a formatted normal result to the response. |
+| `SetOutput(output)` | Sets operation output from a `Dictionary<string, object>` or protobuf `Struct`. |
+| `RequireResources(...)` | Requests resources by name or labels for the next function invocation. |
+| `UpdateDesiredReadyStatus(...)` | Updates desired readiness from observed `Ready` and `Synced` conditions. Types passed through `ignoreNoReadyCondition` are treated as ready when both conditions are absent. |
+| `AddDesiredResource(resource, key)` | Adds or merges a desired Kubernetes resource using a canonical key. The optional key is used when `metadata.name` is absent. |
+| `AddDesiredUsage(by, of, replayDeletion)` | Adds a Crossplane `Usage` that protects one desired resource while another uses it. |
+| `GetDesiredResource<T>(key)` | Gets a desired Kubernetes resource using its canonical API version, kind, and key. |
+| `GetDesiredResources<T>()` | Enumerates desired resources matching the API version and kind of `T`. |
+| `ValidateKubeResourceNames()` | Validates desired `metadata.name` values as RFC 1123 DNS labels. |
+
+Canonical resource keys use the following format:
+
+```text
+{apiVersion}/{kind}/{key}
+```
+
+For grouped resources, `apiVersion` includes the group, for example `apps/v1/Deployment/example`. Core resources use keys such as `v1/ConfigMap/settings`.
+
+```csharp
+response.AddDesiredResource(new V1ConfigMap
+{
+    Metadata = new V1ObjectMeta { Name = "settings" },
+    Data = new Dictionary<string, string> { ["environment"] = "production" }
+});
+
+var configMap = response.GetDesiredResource<V1ConfigMap>("settings");
+
+response.UpdateDesiredReadyStatus(
+    request,
+    logger,
+    [typeof(V1Secret), typeof(V1ConfigMap)]);
+
+response.ValidateKubeResourceNames();
+```
+
+### State and resource extensions
+
+| Extension | Description |
+| --- | --- |
+| `AddOrUpdate(key, resource)` | Adds a Kubernetes object to a `State`, initializes missing API identity, and merges an existing entry using protobuf merge semantics. |
+| `GetKubeResource<T>()` | Deserializes a protobuf function `Resource` as a Kubernetes object. |
+| `GetCondition(conditionType)` | Gets a condition from a resource status by condition type. |
+
+```csharp
+response.Desired.AddOrUpdate("settings", configMap);
+
+var resource = response.Desired.Resources["settings"];
+var typedResource = resource.GetKubeResource<V1ConfigMap>();
+var readyCondition = resource.GetCondition("Ready");
+```
