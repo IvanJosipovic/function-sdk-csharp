@@ -98,7 +98,7 @@ var configMaps = request.GetObservedResources<V1ConfigMap>();
 | `NormalF(message, args)` | Adds a formatted normal result to the response. |
 | `SetOutput(output)` | Sets operation output from a `Dictionary<string, object>` or protobuf `Struct`. |
 | `RequireResources(...)` | Requests resources by name or labels for the next function invocation. |
-| `UpdateDesiredReadyStatus(...)` | Updates desired readiness from observed `Ready` and `Synced` conditions. Types passed through `ignoreNoReadyCondition` are treated as ready when no `Ready` condition exists and no `Synced=False` condition exists, including when `Synced=True`. |
+| `UpdateDesiredReadyStatus(...)` | Updates desired readiness from custom typed predicates, standard Kubernetes health, or observed `Ready` and `Synced` conditions. Unhealthy resources are explicitly marked not ready on every invocation. |
 | `AddDesiredResource(resource, key)` | Adds or merges a desired Kubernetes resource using a canonical key. The optional key is used when `metadata.name` is absent. |
 | `AddDesiredUsage(by, of, replayDeletion)` | Adds a Crossplane `Usage` that protects one desired resource while another uses it. |
 | `GetDesiredResource<T>(key)` | Gets a desired Kubernetes resource using its canonical API version, kind, and key. |
@@ -131,10 +131,31 @@ var configMap = response.GetDesiredResource<V1ConfigMap>("settings");
 response.UpdateDesiredReadyStatus(
     request,
     logger,
-    [typeof(V1Secret), typeof(V1ConfigMap)]);
+    [
+        ResourceReadinessCheck.For<MyCustomResource>(
+            resource => resource.Status?.Phase == "Available",
+            resource => resource.Status?.Healthy == true)
+    ]);
 
 response.ValidateKubeResourceNames();
 ```
+
+`UpdateDesiredReadyStatus` automatically evaluates these standard Kubernetes
+resources using their native status fields:
+
+- Core `v1`: `Pod`, `Service`, `Namespace`, `ConfigMap`, `Secret`,
+  `ServiceAccount`, and `PersistentVolumeClaim`.
+- `apps/v1`: `Deployment`, `StatefulSet`, `DaemonSet`, and `ReplicaSet`.
+- `batch/v1`: `Job` and `CronJob`.
+- `autoscaling/v2`: `HorizontalPodAutoscaler`.
+- `networking.k8s.io/v1`: `Ingress`.
+
+For a custom resource type, pass an array of `ResourceReadinessCheck` instances
+created with `ResourceReadinessCheck.For<T>(...)`. Checks apply only to observed
+resources with the exact API version and kind of `T`, and all matching checks
+and predicates must return `true` for the resource to be ready.
+`Synced=False` always takes precedence. Other resource types continue to use the
+Crossplane-style `Ready` condition.
 
 ### State and resource extensions
 

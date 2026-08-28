@@ -31,19 +31,22 @@ public static class ResourceExtensions
     /// <returns>The condition as a Struct, or null if not found.</returns>
     public static Struct? GetCondition(this Resource resource, string conditionType)
     {
-        if (resource.Resource_.Fields.TryGetValue("status", out Value? status))
+        if (!resource.Resource_.Fields.TryGetValue("status", out var status)
+            || status.KindCase != Value.KindOneofCase.StructValue
+            || !status.StructValue.Fields.TryGetValue("conditions", out var conditions)
+            || conditions.KindCase != Value.KindOneofCase.ListValue)
         {
-            if (status.StructValue.Fields.TryGetValue("conditions", out Value? conditions))
-            {
-                var conditionValues = conditions.ListValue.Values;
+            return null;
+        }
 
-                foreach (var condition in conditionValues)
-                {
-                    if (condition.StructValue.Fields["type"].StringValue == conditionType)
-                    {
-                        return condition.StructValue;
-                    }
-                }
+        foreach (var condition in conditions.ListValue.Values)
+        {
+            if (condition.KindCase == Value.KindOneofCase.StructValue
+                && condition.StructValue.Fields.TryGetValue("type", out var type)
+                && type.KindCase == Value.KindOneofCase.StringValue
+                && type.StringValue == conditionType)
+            {
+                return condition.StructValue;
             }
         }
 

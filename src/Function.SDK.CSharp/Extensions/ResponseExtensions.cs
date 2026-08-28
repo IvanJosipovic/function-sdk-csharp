@@ -155,15 +155,64 @@ public static partial class ResponseExtensions
     /// <param name="response">The RunFunctionResponse containing the desired resources.</param>
     /// <param name="request">The RunFunctionRequest containing the observed resources.</param>
     /// <param name="_logger">The logger to use for logging information.</param>
-    /// <param name="ignoreNoReadyCondition">Optional types implementing <see cref="IKubernetesObject"/> to mark ready when they have no Ready condition and no Synced=False condition.</param>
-    public static void UpdateDesiredReadyStatus(this RunFunctionResponse response, RunFunctionRequest request, ILogger _logger, System.Type[]? ignoreNoReadyCondition = null)
+    public static void UpdateDesiredReadyStatus(this RunFunctionResponse response, RunFunctionRequest request, ILogger _logger)
+    {
+        UpdateDesiredReadyStatusCore(response, request, _logger, null);
+    }
+
+    /// <summary>
+    /// Updates desired resource readiness using custom typed resource checks.
+    /// </summary>
+    /// <param name="response">The RunFunctionResponse containing the desired resources.</param>
+    /// <param name="request">The RunFunctionRequest containing the observed resources.</param>
+    /// <param name="_logger">The logger to use for logging information.</param>
+    /// <param name="customReadinessChecks">Typed checks used to validate matching observed resources.</param>
+    public static void UpdateDesiredReadyStatus(
+        this RunFunctionResponse response,
+        RunFunctionRequest request,
+        ILogger _logger,
+        ResourceReadinessCheck[] customReadinessChecks)
+    {
+        ArgumentNullException.ThrowIfNull(customReadinessChecks);
+        if (customReadinessChecks.Length == 0)
+        {
+            throw new ArgumentException("At least one custom readiness check is required.", nameof(customReadinessChecks));
+        }
+
+        if (customReadinessChecks.Any(static check => check == null))
+        {
+            throw new ArgumentException("Custom readiness checks cannot contain null.", nameof(customReadinessChecks));
+        }
+
+        UpdateDesiredReadyStatusCore(response, request, _logger, EvaluateCustomReadiness);
+
+        bool? EvaluateCustomReadiness(Resource resource)
+        {
+            if (!resource.Resource_.Fields.TryGetValue("apiVersion", out var apiVersion)
+                || !resource.Resource_.Fields.TryGetValue("kind", out var kind))
+            {
+                return null;
+            }
+
+            var matchingChecks = customReadinessChecks.Where(check =>
+                check.ApiVersion == apiVersion.StringValue && check.Kind == kind.StringValue);
+            bool? ready = null;
+            foreach (var check in matchingChecks)
+            {
+                ready = (ready ?? true) && check.Evaluate(resource);
+            }
+
+            return ready;
+        }
+    }
+
+    private static void UpdateDesiredReadyStatusCore(
+        RunFunctionResponse response,
+        RunFunctionRequest request,
+        ILogger logger,
+        Func<Resource, bool?>? customReadinessCheck)
     {
         var observed = request.GetObservedResources();
-        var ignoredResourceTypes = ignoreNoReadyCondition?
-            .Select(KubernetesResourceIdentity.Get)
-            .Select(static identity => $"{identity.ApiVersion}/{identity.Kind}")
-            .ToHashSet(StringComparer.Ordinal);
-
         foreach (var dr in response.Desired.Resources.ToDictionary())
         {
             // If this desired resource does not exist in the observed resources,
@@ -171,51 +220,78 @@ public static partial class ResponseExtensions
             if (observed.TryGetValue(dr.Key, out Resource? or))
             {
                 var condition = or.GetCondition("Ready");
-                var syncFailed = or.GetCondition("Synced")?.Fields["status"].StringValue == "False";
+                var syncedCondition = or.GetCondition("Synced");
+                var syncFailed = syncedCondition != null
+                    && syncedCondition.Fields.TryGetValue("status", out var syncedStatus)
+                    && syncedStatus.StringValue == "False";
+
+                // Synced=False is an explicit failure signal for any resource,
+                // including a Kubernetes object with otherwise healthy status.
+                if (syncFailed)
+                {
+                    logger.LogInformation("Automatically determined that composed resource is not ready because synchronization failed: {name}", dr.Key);
+                    dr.Value.Ready = Ready.False;
+                    continue;
+                }
+
+                var customReady = customReadinessCheck?.Invoke(or);
+                if (customReady.HasValue)
+                {
+                    logger.LogInformation(
+                        "Automatically determined custom resource readiness: {name} {ready}",
+                        dr.Key,
+                        customReady.Value);
+                    dr.Value.Ready = customReady.Value ? Ready.True : Ready.False;
+                    continue;
+                }
+
+                // Standard Kubernetes resources expose kind-specific status
+                // instead of a Crossplane Ready condition.
+                if (KubernetesHealthChecks.TryEvaluate(or, out var kubernetesReady))
+                {
+                    logger.LogInformation(
+                        "Automatically determined Kubernetes resource readiness: {name} {ready}",
+                        dr.Key,
+                        kubernetesReady);
+                    dr.Value.Ready = kubernetesReady ? Ready.True : Ready.False;
+                    continue;
+                }
 
                 // Preserve an explicitly ready desired resource when the observed
                 // resource has no Ready condition and no synchronization failure.
-                if (!syncFailed && dr.Value.Ready == Ready.True && condition == null)
+                if (dr.Value.Ready == Ready.True && condition == null)
                 {
-                    _logger.LogDebug("Ignoring desired resource that already has explicit readiness: {name} {ready}", dr.Key, dr.Value.Ready);
+                    logger.LogDebug("Ignoring desired resource that already has explicit readiness: {name} {ready}", dr.Key, dr.Value.Ready);
                     continue;
                 }
 
                 // Re-evaluate readiness from the observed resource on every invocation.
                 // An observed resource may become not ready after previously being ready.
-                _logger.LogDebug("Found desired resource to evaluate readiness: {name}", dr.Key);
+                logger.LogDebug("Found desired resource to evaluate readiness: {name}", dr.Key);
 
-                // A managed resource can retain Ready=True while its latest
-                // reconciliation has failed. Synced=False takes precedence over
-                // Ready=True and over the no-Ready-condition override below.
-                if (!syncFailed && ignoredResourceTypes != null && condition == null && ignoredResourceTypes.Contains($"{or.Resource_.Fields["apiVersion"].StringValue}/{or.Resource_.Fields["kind"].StringValue}"))
+                if (condition != null
+                    && condition.Fields.TryGetValue("status", out var readyStatus)
+                    && readyStatus.StringValue == "True")
                 {
-                    _logger.LogInformation("Resource has no Ready Condition and ignoreNoReadyCondition=true so resource is ready: {name}", dr.Key);
-                    dr.Value.Ready = Ready.True;
-                    continue;
-                }
-
-                if (!syncFailed && condition?.Fields["status"].StringValue == "True")
-                {
-                    _logger.LogInformation("Automatically determined that composed resource is ready: {name}", dr.Key);
+                    logger.LogInformation("Automatically determined that composed resource is ready: {name}", dr.Key);
                     dr.Value.Ready = Ready.True;
                 }
                 else
                 {
-                    _logger.LogInformation("Automatically determined that composed resource is not ready: {name}", dr.Key);
+                    logger.LogInformation("Automatically determined that composed resource is not ready: {name}", dr.Key);
                     dr.Value.Ready = Ready.False;
                 }
             }
             else
             {
-                _logger.LogDebug("Ignoring desired resource that does not appear in observed resources: {name}", dr.Key);
+                logger.LogDebug("Ignoring desired resource that does not appear in observed resources: {name}", dr.Key);
                 continue;
             }
         }
 
         if (response.Desired.Resources.All(x => x.Value.Ready == Ready.True))
         {
-            _logger.LogInformation("All Desired Resources are ready");
+            logger.LogInformation("All Desired Resources are ready");
         }
     }
 
