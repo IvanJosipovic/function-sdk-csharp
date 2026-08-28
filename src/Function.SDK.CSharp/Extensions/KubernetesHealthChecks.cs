@@ -39,6 +39,15 @@ internal static class KubernetesHealthChecks
         return true;
     }
 
+    public static bool IsFailed(Resource resource)
+    {
+        return TryGetString(resource.Resource_, out var apiVersion, "apiVersion")
+            && TryGetString(resource.Resource_, out var kind, "kind")
+            && apiVersion == "batch/v1"
+            && kind == "Job"
+            && HasTrueCondition(resource.Resource_, "Failed");
+    }
+
     private static bool AlwaysReady(Struct _) => true;
 
     private static bool CheckPod(Struct resource)

@@ -121,6 +121,17 @@ public class KubernetesHealthChecksTests
         Evaluate(deployment).Desired.Resources["resource"].Ready.ShouldBe(Ready.False);
     }
 
+    [Fact]
+    public void UpdateDesiredReadyStatusReportsFailedJobAsFatal()
+    {
+        var response = Evaluate(Job(("Failed", "True")));
+
+        response.Desired.Resources["resource"].Ready.ShouldBe(Ready.False);
+        response.Results.Count.ShouldBe(1);
+        response.Results[0].Severity.ShouldBe(Severity.Fatal);
+        response.Results[0].Message.ShouldContain("Job failed");
+    }
+
     private static readonly DateTime ScheduledAt = new(2026, 1, 1, 10, 0, 0, DateTimeKind.Utc);
 
     private static RunFunctionResponse Evaluate(IKubernetesObject resource)

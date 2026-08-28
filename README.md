@@ -8,7 +8,9 @@ The C# SDK for writing [composition functions](https://docs.crossplane.io/latest
 
 Working example, https://github.com/IvanJosipovic/function-kubemodelrepo
 
-## C# Template
+## Getting started
+
+### C# Template
 
 [Template Repository](https://github.com/IvanJosipovic/function-template-csharp)
 
@@ -22,11 +24,15 @@ dotnet new function-csharp -n TheFunction -o c:\repos\func
 
 ## Features
 
-- XRD to Model Generation
-  - Modify the xrd.yaml and models will be automatically generated
-- CRD to Model Generation
-  - Add crd.yaml(s) to the project and models will be automatically generated
-  - Most Crossplane Providers already published [KubernetesCRDModelGen.Models](https://github.com/IvanJosipovic/KubernetesCRDModelGen.Models#generated-packages)
+### Code generation
+
+- **XRD to model generation**
+  - Modify `xrd.yaml` and models are generated automatically.
+- **CRD to model generation**
+  - Add one or more `crd.yaml` files to the project and models are generated
+    automatically.
+  - Most Crossplane providers already publish
+    [KubernetesCRDModelGen.Models](https://github.com/IvanJosipovic/KubernetesCRDModelGen.Models#generated-packages).
 
     | Group | NuGet |
     | --- | --- |
@@ -44,7 +50,9 @@ dotnet new function-csharp -n TheFunction -o c:\repos\func
     | upbound.io | [Link](https://www.nuget.org/packages/KubernetesCRDModelGen.Models.upbound.io/) |
     | vault.upbound.io | [Link](https://www.nuget.org/packages/KubernetesCRDModelGen.Models.vault.upbound.io/) |
 
-- Supports Crossplane v2 or greater
+### Compatibility
+
+- Supports Crossplane v2 or greater.
 
 ## Extensions
 
@@ -90,6 +98,8 @@ var configMaps = request.GetObservedResources<V1ConfigMap>();
 
 ### Response extensions
 
+#### Results and events
+
 | Extension | Description |
 | --- | --- |
 | `Fatal(message)` | Adds a fatal result to the response. |
@@ -97,13 +107,23 @@ var configMaps = request.GetObservedResources<V1ConfigMap>();
 | `Normal(message)` | Adds a normal result to the response. |
 | `NormalF(message, args)` | Adds a formatted normal result to the response. |
 | `SetOutput(output)` | Sets operation output from a `Dictionary<string, object>` or protobuf `Struct`. |
+
+#### Resource requirements
+
+| Extension | Description |
+| --- | --- |
 | `RequireResources(...)` | Requests resources by name or labels for the next function invocation. |
-| `UpdateDesiredReadyStatus(...)` | Updates desired readiness from custom typed predicates, standard Kubernetes health, or observed `Ready` and `Synced` conditions. Unhealthy resources are explicitly marked not ready on every invocation. |
+
+#### Desired resources
+
+| Extension | Description |
+| --- | --- |
 | `AddDesiredResource(resource, key)` | Adds or merges a desired Kubernetes resource using a canonical key. The optional key is used when `metadata.name` is absent. |
 | `AddDesiredUsage(by, of, replayDeletion)` | Adds a Crossplane `Usage` that protects one desired resource while another uses it. |
 | `GetDesiredResource<T>(key)` | Gets a desired Kubernetes resource using its canonical API version, kind, and key. |
 | `GetDesiredResources<T>()` | Enumerates desired resources matching the API version and kind of `T`. |
-| `ValidateKubeResourceNames()` | Validates desired `metadata.name` values as RFC 1123 DNS labels. |
+
+##### Canonical resource keys
 
 Canonical resource keys use the following format:
 
@@ -118,6 +138,20 @@ Namespaced resources include their namespace:
 ```
 
 For grouped resources, `apiVersion` includes the group, for example `apps/v1/Deployment/default/example`. Core resources use keys such as `v1/ConfigMap/default/settings`. Cluster-scoped resources continue to use `{apiVersion}/{kind}/{key}`.
+
+#### Readiness and validation
+
+| Extension | Description |
+| --- | --- |
+| `UpdateDesiredReadyStatus(...)` | Updates desired readiness from custom typed predicates, standard Kubernetes health, or observed `Ready` and `Synced` conditions. Unhealthy resources are explicitly marked not ready on every invocation. |
+| `ValidateKubeResourceNames()` | Validates desired `metadata.name` values as RFC 1123 DNS labels. |
+
+##### `UpdateDesiredReadyStatus`
+
+`UpdateDesiredReadyStatus` provides the readiness behavior of Crossplane's
+`function-auto-ready` function directly in the SDK. It evaluates observed
+composed resources and updates their desired `Ready` fields, so a separate
+`function-auto-ready` pipeline step is not required when this method is used.
 
 ```csharp
 response.AddDesiredResource(new V1ConfigMap
@@ -140,15 +174,58 @@ response.UpdateDesiredReadyStatus(
 response.ValidateKubeResourceNames();
 ```
 
+##### Standard Kubernetes resources
+
 `UpdateDesiredReadyStatus` automatically evaluates these standard Kubernetes
 resources using their native status fields:
 
-- Core `v1`: `Pod`, `Service`, `Namespace`, `ConfigMap`, `Secret`,
-  `ServiceAccount`, and `PersistentVolumeClaim`.
-- `apps/v1`: `Deployment`, `StatefulSet`, `DaemonSet`, and `ReplicaSet`.
-- `batch/v1`: `Job` and `CronJob`.
-- `autoscaling/v2`: `HorizontalPodAutoscaler`.
-- `networking.k8s.io/v1`: `Ingress`.
+###### `v1`
+
+- `ConfigMap`, `Namespace`, `Secret`, `ServiceAccount`
+  - Always ready.
+- `PersistentVolumeClaim`
+  - Ready when `status.phase` is `Bound`.
+- `Pod`
+  - Ready when `status.phase` is `Succeeded`, or when it is `Running` with
+    `spec.restartPolicy: Always` and `Ready=True`.
+- `Service`
+  - Ready unless it is a `LoadBalancer` without a load balancer ingress.
+
+###### `apps/v1`
+
+- `Deployment`
+  - Ready when updated and available replicas match the desired replica count
+    and `Available=True`.
+- `StatefulSet`
+  - Ready when ready and current replicas match the desired count and the
+    current and update revisions match.
+- `DaemonSet`
+  - Ready when desired replicas match ready, updated, and available replicas.
+- `ReplicaSet`
+  - Ready when the observed generation is current, there is no
+    `ReplicaFailure=True`, and available replicas meet the desired count.
+
+###### `batch/v1`
+
+- `CronJob`
+  - Ready when suspended, has an active Job, or has completed a schedule
+    successfully.
+- `Job`
+  - Ready when `Complete=True` and it is not suspended or failed.
+  - A `Failed=True` condition marks the Job not ready and reports a fatal
+    result, so the composite does not remain in a processing state after a
+    terminal Job failure.
+
+###### `autoscaling/v2`
+
+- `HorizontalPodAutoscaler`
+  - Ready when scaling is active or limited, unless one of its scale or metric
+    retrieval conditions reports failure.
+
+###### `networking.k8s.io/v1`
+
+- `Ingress`
+  - Ready when at least one load balancer ingress is present.
 
 For a custom resource type, pass an array of `ResourceReadinessCheck` instances
 created with `ResourceReadinessCheck.For<T>(...)`. Checks apply only to observed
