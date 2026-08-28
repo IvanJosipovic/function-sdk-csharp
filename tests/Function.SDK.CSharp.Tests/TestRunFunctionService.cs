@@ -126,7 +126,7 @@ public class TestRunFunctionService(ILogger<TestRunFunctionService> logger) : Fu
             // Get Desired resources and update Status if Ready
             resp.UpdateDesiredReadyStatus(request, logger,
             [
-                typeof(V1beta1ProviderConfig)
+                ResourceReadinessCheck.For<V1beta1ProviderConfig>(static _ => true)
             ]);
 
             return Task.FromResult(resp);
