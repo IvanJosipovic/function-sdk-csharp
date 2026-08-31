@@ -234,14 +234,6 @@ public static partial class ResponseExtensions
                     continue;
                 }
 
-                if (KubernetesHealthChecks.IsFailed(or))
-                {
-                    logger.LogInformation("Automatically determined that composed Job has failed: {name}", dr.Key);
-                    dr.Value.Ready = Ready.False;
-                    response.Fatal($"Composed Job failed: {dr.Key}");
-                    continue;
-                }
-
                 var customReady = customReadinessCheck?.Invoke(or);
                 if (customReady.HasValue)
                 {
@@ -250,6 +242,14 @@ public static partial class ResponseExtensions
                         dr.Key,
                         customReady.Value);
                     dr.Value.Ready = customReady.Value ? Ready.True : Ready.False;
+                    continue;
+                }
+
+                if (KubernetesHealthChecks.IsFailed(or))
+                {
+                    logger.LogInformation("Automatically determined that composed Job has failed: {name}", dr.Key);
+                    dr.Value.Ready = Ready.False;
+                    response.Fatal($"Composed Job failed: {dr.Key}");
                     continue;
                 }
 
