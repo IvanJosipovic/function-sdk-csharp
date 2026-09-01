@@ -83,7 +83,7 @@ public class ResponseResourceExtensionsTests
     }
 
     [Fact]
-    public void WhenAddingSameDesiredResourceTwiceThenExistingResourceIsMerged()
+    public void WhenAddingSameDesiredResourceTwiceThenExistingManifestIsReplaced()
     {
         var response = CreateResponse();
         var first = CreateConfigMap("example");
@@ -94,8 +94,9 @@ public class ResponseResourceExtensionsTests
         response.AddDesiredResource(first);
         response.AddDesiredResource(second);
 
-        var merged = response.GetDesiredResource<V1ConfigMap>("example");
-        (response.Desired.Resources.Count, merged!.Data["second"]).ShouldBe((1, "two"));
+        var replaced = response.GetDesiredResource<V1ConfigMap>("example");
+        (response.Desired.Resources.Count, replaced!.Data["second"]).ShouldBe((1, "two"));
+        replaced.Data.ShouldNotContainKey("first");
     }
 
     [Fact]

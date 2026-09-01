@@ -9,7 +9,7 @@ namespace Function.SDK.CSharp.Example.Tests;
 public class UnitTest1
 {
     [Fact]
-    public void TestMerge()
+    public void TestDesiredResourceReplacement()
     {
         var xr = new V1alpha1XStorageBucket()
         {
@@ -90,7 +90,7 @@ public class UnitTest1
 
         var response2 = request2.GetTestResponse();
 
-        response2.Desired.GetResource<V1beta1ResourceGroup>("rg").ShouldBeEquivalentTo(desiredResource2);
+        response2.Desired.GetResource<V1beta1ResourceGroup>("rg").ShouldBeEquivalentTo(desiredResource);
     }
 
     [Fact]
