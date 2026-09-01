@@ -238,7 +238,7 @@ Crossplane-style `Ready` condition.
 
 | Extension | Description |
 | --- | --- |
-| `AddOrUpdate(key, resource)` | Adds a Kubernetes object to a `State`, initializes missing API identity, and merges an existing entry using protobuf merge semantics. |
+| `AddOrUpdate(key, resource)` | Adds a Kubernetes object to a `State`, initializes missing API identity, and replaces the manifest of an existing entry while preserving its outer protocol state. |
 | `GetKubeResource<T>()` | Deserializes a protobuf function `Resource` as a Kubernetes object. |
 | `GetCondition(conditionType)` | Gets a condition from a resource status by condition type. |
 

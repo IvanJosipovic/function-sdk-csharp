@@ -10,30 +10,34 @@ namespace Function.SDK.CSharp;
 public static class StateExtensions
 {
     /// <summary>
-    /// Adds Resource or merges with an existing one. Sets the ApiVersion and Kind if not set on the object.
-    /// If the resource with the same key already exists, the existing resource will be merged with the new one using protobuf merge semantics.
+    /// Adds a resource or replaces the manifest of an existing one. Sets the ApiVersion and Kind if not set on the object.
+    /// Replacing only the manifest preserves outer protocol state such as readiness and connection details.
     /// </summary>
     /// <param name="state">The state to update.</param>
     /// <param name="key">The key of the resource.</param>
     /// <param name="obj">The Kubernetes object to add or update.</param>
     public static void AddOrUpdate(this State state, string key, IKubernetesObject obj)
     {
+        ArgumentNullException.ThrowIfNull(state);
+        ArgumentException.ThrowIfNullOrEmpty(key);
+        ArgumentNullException.ThrowIfNull(obj);
+
         if (string.IsNullOrEmpty(obj.ApiVersion) || string.IsNullOrEmpty(obj.Kind))
         {
             obj.Initialize();
         }
 
-        var kubeObj = Struct.Parser.ParseJson(KubernetesJson.Serialize(obj));
+        var serialized = Struct.Parser.ParseJson(KubernetesJson.Serialize(obj));
 
-        if (state.Resources.TryGetValue(key, out Resource? value))
+        if (state.Resources.TryGetValue(key, out Resource? existing))
         {
-            value.Resource_.MergeFrom(kubeObj);
+            existing.Resource_ = serialized;
         }
         else
         {
             state.Resources[key] = new()
             {
-                Resource_ = kubeObj
+                Resource_ = serialized
             };
         }
     }
