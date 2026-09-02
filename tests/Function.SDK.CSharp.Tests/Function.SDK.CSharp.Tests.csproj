@@ -19,7 +19,7 @@
     <PackageReference Include="Grpc.Core.Testing" Version="2.46.6" />
     <PackageReference Include="KubernetesCRDModelGen.Models.azure.upbound.io" Version="1.54.0" />
     <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.11.0" />
-    <PackageReference Include="Microsoft.Testing.Extensions.HangDump" Version="2.3.3" />
+    <PackageReference Include="Microsoft.Testing.Extensions.HangDump" Version="2.4.0" />
     <PackageReference Include="Shouldly" Version="4.3.0" />
     <PackageReference Include="xunit.v3.mtp-v2" Version="4.0.0" />
   </ItemGroup>
