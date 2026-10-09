@@ -22,12 +22,39 @@ dotnet new install function-template-csharp
 dotnet new function-csharp -n TheFunction -o c:\repos\func
 ```
 
+### Run the repository sample
+
+The solution also includes a Crossplane function sample that composes an Azure
+storage bucket. Run it locally and execute its tests with:
+
+```shell
+dotnet run --project src/Function.SDK.CSharp.Sample/Function.SDK.CSharp.Sample.csproj
+dotnet test tests/Function.SDK.CSharp.Sample.Tests/Function.SDK.CSharp.Sample.Tests.csproj
+```
+
+Render the sample composition with Crossplane:
+
+```shell
+crossplane render example/xr.yaml example/composition.yaml example/functions.yaml
+```
+
+To build and run the container from the repository root:
+
+```shell
+docker build -f src/Function.SDK.CSharp.Sample/Dockerfile -t function-sdk-csharp-sample src
+docker run -it -p 9443:9443 function-sdk-csharp-sample
+```
+
 ## Features
 
 ### Code generation
 
 - **XRD to model generation**
   - Modify `xrd.yaml` and models are generated automatically.
+- **XRD spec usage analysis**
+  - Diagnostic `FSDK001` warns when a leaf field declared under an XRD's
+    `spec` is not referenced by code that consumes that generated composite
+    resource model.
 - **CRD to model generation**
   - Add one or more `crd.yaml` files to the project and models are generated
     automatically.

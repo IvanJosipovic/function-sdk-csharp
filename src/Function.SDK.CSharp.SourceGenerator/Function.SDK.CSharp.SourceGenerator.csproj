@@ -30,6 +30,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Function.SDK.CSharp.Analyzers\Function.SDK.CSharp.Analyzers.csproj"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
@@ -49,4 +54,17 @@
       <None Include="@(DllDependencies)" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     </ItemGroup>
   </Target>
+
+  <Target Name="IncludeXrdSpecUsageAnalyzer" BeforeTargets="_GetPackageFiles" DependsOnTargets="ResolveProjectReferences">
+    <MSBuild
+      Projects="$(MSBuildThisFileDirectory)..\Function.SDK.CSharp.Analyzers\Function.SDK.CSharp.Analyzers.csproj"
+      Targets="GetTargetPath"
+      Properties="Configuration=$(Configuration);TargetFramework=netstandard2.0">
+      <Output TaskParameter="TargetOutputs" ItemName="_XrdSpecUsageAnalyzer" />
+    </MSBuild>
+    <ItemGroup>
+      <None Include="@(_XrdSpecUsageAnalyzer)" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    </ItemGroup>
+  </Target>
+
 </Project>
