@@ -14,7 +14,7 @@ Working example, https://github.com/IvanJosipovic/function-kubemodelrepo
 
 [Template Repository](https://github.com/IvanJosipovic/function-template-csharp)
 
-[Download .Net 10 SDK](https://dotnet.microsoft.com/en-us/download)
+[Download the .NET 11 SDK](https://dotnet.microsoft.com/en-us/download)
 
 ```shell
 dotnet new install function-template-csharp
