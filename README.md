@@ -41,7 +41,7 @@ crossplane render example/xr.yaml example/composition.yaml example/functions.yam
 To build and run the container from the repository root:
 
 ```shell
-docker build -f src/Function.SDK.CSharp.Sample/Dockerfile -t function-sdk-csharp-sample src/Function.SDK.CSharp.Sample
+docker build -f src/Function.SDK.CSharp.Sample/Dockerfile -t function-sdk-csharp-sample src
 docker run -it -p 9443:9443 function-sdk-csharp-sample
 ```
 
