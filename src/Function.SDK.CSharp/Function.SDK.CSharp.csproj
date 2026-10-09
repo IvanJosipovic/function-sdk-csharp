@@ -28,6 +28,7 @@
     <PackageReference Include="Enums.NET" Version="5.0.0" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.84.0" />
     <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.84.0" />
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.7.0" />
     <PackageReference Include="KubernetesClient" Version="19.0.2" />
     <PackageReference Include="KubernetesCRDModelGen.Models.crossplane.io" Version="1.18.0" />
   </ItemGroup>
@@ -42,6 +43,10 @@
 
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Function.SDK.CSharp.Tests" />
   </ItemGroup>
 
 </Project>
