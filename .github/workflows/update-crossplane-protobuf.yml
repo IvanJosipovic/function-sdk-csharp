@@ -1,0 +1,66 @@
+name: Update Crossplane Protobuf
+
+on:
+  schedule:
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: update-crossplane-protobuf
+  cancel-in-progress: false
+
+jobs:
+  update-protobuf:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Get latest Crossplane release
+        id: release
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          release_json="$(curl --fail --silent --show-error --location https://api.github.com/repos/crossplane/crossplane/releases/latest)"
+          tag="$(jq --raw-output '.tag_name // empty' <<< "$release_json")"
+          if [[ ! "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Expected a stable Crossplane release tag, received: '$tag'." >&2
+            exit 1
+          fi
+
+          printf 'tag=%s\n' "$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Download Crossplane protobuf
+        env:
+          CROSSPLANE_TAG: ${{ steps.release.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          proto_path="src/Function.SDK.CSharp/Protos/run_function.proto"
+          curl --fail --silent --show-error --location \
+            "https://raw.githubusercontent.com/crossplane/crossplane/${CROSSPLANE_TAG}/proto/fn/v1/run_function.proto" \
+            --output "$proto_path"
+          test -s "$proto_path"
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: automation/update-crossplane-protobuf
+          delete-branch: true
+          add-paths: src/Function.SDK.CSharp/Protos/run_function.proto
+          commit-message: "chore: update Crossplane protobuf to ${{ steps.release.outputs.tag }}"
+          title: "feat: Crossplane Protobuf update ${{ steps.release.outputs.tag }}"
+          body: |
+            ## Crossplane protobuf update
+
+            Updates the function protocol definition from Crossplane **${{ steps.release.outputs.tag }}**.
+
+            - Release: [${{ steps.release.outputs.tag }}](https://github.com/crossplane/crossplane/releases/tag/${{ steps.release.outputs.tag }})
+            - Source: [`proto/fn/v1/run_function.proto`](https://github.com/crossplane/crossplane/blob/${{ steps.release.outputs.tag }}/proto/fn/v1/run_function.proto)
