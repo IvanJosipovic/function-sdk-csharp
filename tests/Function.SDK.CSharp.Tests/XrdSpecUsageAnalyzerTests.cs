@@ -35,6 +35,15 @@ public class XrdSpecUsageAnalyzerTests
                 public string Location { get; set; } = "";
                 public bool Versioning { get; set; }
                 public bool Public { get; set; }
+                public System.Collections.Generic.List<V1alpha1XStorageBucketSpecParameterItem> Items { get; set; } = new();
+                public V1alpha1XStorageBucketSpecParameterItem[] ArrayItems { get; set; } = System.Array.Empty<V1alpha1XStorageBucketSpecParameterItem>();
+                public System.Collections.Generic.Dictionary<string, V1alpha1XStorageBucketSpecParameterItem> ItemMap { get; set; } = new();
+            }
+
+            public sealed class V1alpha1XStorageBucketSpecParameterItem
+            {
+                public string Name { get; set; } = "";
+                public bool Enabled { get; set; }
             }
 
             public sealed class V1alpha1XStorageBucketSpecCrossplane
@@ -84,13 +93,64 @@ public class XrdSpecUsageAnalyzerTests
         Assert.Empty(diagnostics);
     }
 
-    private static string CreateSource(bool includeVersioning, bool useVersioningPropertyPattern = false)
+    [Fact]
+    public async Task ReportsUnreferencedPropertiesInsideCollections()
+    {
+        var diagnostics = await Analyze(
+            CreateSource(includeVersioning: true, includeCollectionElementProperties: false));
+
+        var messages = diagnostics
+            .Select(diagnostic => diagnostic.GetMessage(CultureInfo.InvariantCulture))
+            .ToArray();
+
+        Assert.Equal(6, messages.Length);
+        Assert.Contains(messages, message => message.Contains("Parameters.Items[].Name", StringComparison.Ordinal));
+        Assert.Contains(messages, message => message.Contains("Parameters.Items[].Enabled", StringComparison.Ordinal));
+        Assert.Contains(messages, message => message.Contains("Parameters.ArrayItems[].Name", StringComparison.Ordinal));
+        Assert.Contains(messages, message => message.Contains("Parameters.ArrayItems[].Enabled", StringComparison.Ordinal));
+        Assert.Contains(messages, message => message.Contains("Parameters.ItemMap{}.Name", StringComparison.Ordinal));
+        Assert.Contains(messages, message => message.Contains("Parameters.ItemMap{}.Enabled", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task TracksCollectionReferencesByFullResourcePath()
+    {
+        var diagnostics = await Analyze(
+            CreateSource(includeVersioning: true, onlyReferenceItemsCollection: true));
+
+        var messages = diagnostics
+            .Select(diagnostic => diagnostic.GetMessage(CultureInfo.InvariantCulture))
+            .ToArray();
+
+        Assert.Equal(4, messages.Length);
+        Assert.DoesNotContain(messages, message => message.Contains("Parameters.Items[]", StringComparison.Ordinal));
+        Assert.Contains(messages, message => message.Contains("Parameters.ArrayItems[].Name", StringComparison.Ordinal));
+        Assert.Contains(messages, message => message.Contains("Parameters.ArrayItems[].Enabled", StringComparison.Ordinal));
+        Assert.Contains(messages, message => message.Contains("Parameters.ItemMap{}.Name", StringComparison.Ordinal));
+        Assert.Contains(messages, message => message.Contains("Parameters.ItemMap{}.Enabled", StringComparison.Ordinal));
+    }
+
+    private static string CreateSource(
+        bool includeVersioning,
+        bool useVersioningPropertyPattern = false,
+        bool includeCollectionElementProperties = true,
+        bool onlyReferenceItemsCollection = false)
     {
         var versioning = includeVersioning
             ? useVersioningPropertyPattern
                 ? "_ = xr.Spec.Parameters is { Versioning: true };"
                 : "_ = xr.Spec.Parameters.Versioning;"
             : string.Empty;
+        var collectionItemProperties = includeCollectionElementProperties
+            ? "_ = item.Name; _ = item.Enabled;"
+            : "_ = item.ToString();";
+        var itemsUsage = CreateCollectionIteration("xr.Spec.Parameters.Items", collectionItemProperties);
+        var arrayItemsUsage = onlyReferenceItemsCollection
+            ? string.Empty
+            : CreateCollectionIteration("xr.Spec.Parameters.ArrayItems", collectionItemProperties);
+        var itemMapUsage = onlyReferenceItemsCollection
+            ? string.Empty
+            : CreateCollectionIteration("xr.Spec.Parameters.ItemMap.Values", collectionItemProperties);
 
         return $$"""
             {{ModelSource}}
@@ -109,8 +169,21 @@ public class XrdSpecUsageAnalyzerTests
                         _ = xr.Spec.Parameters.Location;
                         {{versioning}}
                         _ = xr.Spec.Parameters.Public;
+                        {{itemsUsage}}
+                        {{arrayItemsUsage}}
+                        {{itemMapUsage}}
                     }
                 }
+            }
+            """;
+    }
+
+    private static string CreateCollectionIteration(string collectionExpression, string propertyReferences)
+    {
+        return $$"""
+            foreach (var item in {{collectionExpression}})
+            {
+                {{propertyReferences}}
             }
             """;
     }
@@ -137,10 +210,13 @@ public class XrdSpecUsageAnalyzerTests
             compilation.GetDiagnostics(),
             diagnostic => diagnostic.Severity == DiagnosticSeverity.Error);
 
+        var semanticModel = compilation.GetSemanticModel(syntaxTree);
         var invocation = syntaxTree.GetRoot().DescendantNodes()
             .OfType<InvocationExpressionSyntax>()
-            .Single();
-        var method = compilation.GetSemanticModel(syntaxTree).GetSymbolInfo(invocation).Symbol as IMethodSymbol;
+            .Single(candidate =>
+                semanticModel.GetSymbolInfo(candidate).Symbol is IMethodSymbol candidateMethod &&
+                candidateMethod.Name == "GetObservedCompositeResource");
+        var method = semanticModel.GetSymbolInfo(invocation).Symbol as IMethodSymbol;
         Assert.NotNull(method);
         Assert.Equal("GetObservedCompositeResource", method.Name);
 
