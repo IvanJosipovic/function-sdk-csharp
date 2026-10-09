@@ -75,6 +75,28 @@ app.MapFunctionService<RunFunctionService>();
 await app.RunAsync();
 ```
 
+The function host uses the same credential rule as the Go SDK: configure
+`TLS_SERVER_CERTS_DIR` or `--tls-certs-dir` for mTLS, or explicitly pass
+`--insecure` for plaintext. Starting without either option fails rather than
+silently serving without authentication.
+
+The TLS directory must contain `tls.crt`, `tls.key`, and `ca.crt`. The CA bundle
+in `ca.crt` is used to validate Crossplane's client certificate for client
+authentication. If the certificate declares key usage, it must allow digital
+signatures. Missing or untrusted client certificates are rejected. `--insecure`
+disables TLS and client authentication and should be limited to development and
+testing; as in the Go template, it takes precedence over the TLS directory.
+
+| C# argument | Go function-template equivalent | Behavior |
+| --- | --- | --- |
+| `--address <host:port>` | `--address` | Defaults to `:9443`; the wildcard address is mapped to Kestrel's all-interface listener. |
+| `--tls-certs-dir <directory>` | `--tls-certs-dir` | Uses the specified TLS directory; `TLS_SERVER_CERTS_DIR` is the fallback. |
+| `--insecure[=true\|false]` | `--insecure` | Explicitly enables plaintext and disables client-certificate authentication. |
+| `--debug[=true\|false]`, `-d` | `--debug`, `-d` | Enables debug-level logs. |
+
+The Go template does not define a `--creds` option; configure credentials with
+the TLS directory or explicitly opt into `--insecure` instead.
+
 ### Request extensions
 
 | Extension | Description |
