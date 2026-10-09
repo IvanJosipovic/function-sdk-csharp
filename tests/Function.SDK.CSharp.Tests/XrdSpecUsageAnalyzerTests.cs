@@ -112,10 +112,29 @@ public class XrdSpecUsageAnalyzerTests
         Assert.Contains(messages, message => message.Contains("Parameters.ItemMap{}.Enabled", StringComparison.Ordinal));
     }
 
+    [Fact]
+    public async Task TracksCollectionReferencesByFullResourcePath()
+    {
+        var diagnostics = await Analyze(
+            CreateSource(includeVersioning: true, onlyReferenceItemsCollection: true));
+
+        var messages = diagnostics
+            .Select(diagnostic => diagnostic.GetMessage(CultureInfo.InvariantCulture))
+            .ToArray();
+
+        Assert.Equal(4, messages.Length);
+        Assert.DoesNotContain(messages, message => message.Contains("Parameters.Items[]", StringComparison.Ordinal));
+        Assert.Contains(messages, message => message.Contains("Parameters.ArrayItems[].Name", StringComparison.Ordinal));
+        Assert.Contains(messages, message => message.Contains("Parameters.ArrayItems[].Enabled", StringComparison.Ordinal));
+        Assert.Contains(messages, message => message.Contains("Parameters.ItemMap{}.Name", StringComparison.Ordinal));
+        Assert.Contains(messages, message => message.Contains("Parameters.ItemMap{}.Enabled", StringComparison.Ordinal));
+    }
+
     private static string CreateSource(
         bool includeVersioning,
         bool useVersioningPropertyPattern = false,
-        bool includeCollectionElementProperties = true)
+        bool includeCollectionElementProperties = true,
+        bool onlyReferenceItemsCollection = false)
     {
         var versioning = includeVersioning
             ? useVersioningPropertyPattern
@@ -125,6 +144,13 @@ public class XrdSpecUsageAnalyzerTests
         var collectionItemProperties = includeCollectionElementProperties
             ? "_ = item.Name; _ = item.Enabled;"
             : "_ = item.ToString();";
+        var itemsUsage = CreateCollectionIteration("xr.Spec.Parameters.Items", collectionItemProperties);
+        var arrayItemsUsage = onlyReferenceItemsCollection
+            ? string.Empty
+            : CreateCollectionIteration("xr.Spec.Parameters.ArrayItems", collectionItemProperties);
+        var itemMapUsage = onlyReferenceItemsCollection
+            ? string.Empty
+            : CreateCollectionIteration("xr.Spec.Parameters.ItemMap.Values", collectionItemProperties);
 
         return $$"""
             {{ModelSource}}
@@ -143,20 +169,21 @@ public class XrdSpecUsageAnalyzerTests
                         _ = xr.Spec.Parameters.Location;
                         {{versioning}}
                         _ = xr.Spec.Parameters.Public;
-                        foreach (var item in xr.Spec.Parameters.Items)
-                        {
-                            {{collectionItemProperties}}
-                        }
-                        foreach (var item in xr.Spec.Parameters.ArrayItems)
-                        {
-                            {{collectionItemProperties}}
-                        }
-                        foreach (var item in xr.Spec.Parameters.ItemMap.Values)
-                        {
-                            {{collectionItemProperties}}
-                        }
+                        {{itemsUsage}}
+                        {{arrayItemsUsage}}
+                        {{itemMapUsage}}
                     }
                 }
+            }
+            """;
+    }
+
+    private static string CreateCollectionIteration(string collectionExpression, string propertyReferences)
+    {
+        return $$"""
+            foreach (var item in {{collectionExpression}})
+            {
+                {{propertyReferences}}
             }
             """;
     }
