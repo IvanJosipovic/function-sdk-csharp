@@ -46,13 +46,21 @@ public sealed class XrdSpecUsageAnalyzer : DiagnosticAnalyzer
             startContext.RegisterOperationAction(
                 operationContext =>
                 {
-                    var property = ((IPropertyReferenceOperation)operationContext.Operation).Property;
-                    if (IsGeneratedModelType(property.ContainingType))
+                    var propertyReference = operationContext.Operation switch
                     {
-                        referencedProperties.Add(property.OriginalDefinition);
+                        IPropertyReferenceOperation property => property,
+                        IPropertySubpatternOperation { Member: IPropertyReferenceOperation property } => property,
+                        _ => null
+                    };
+
+                    if (propertyReference is not null &&
+                        IsGeneratedModelType(propertyReference.Property.ContainingType))
+                    {
+                        referencedProperties.Add(propertyReference.Property.OriginalDefinition);
                     }
                 },
-                OperationKind.PropertyReference);
+                OperationKind.PropertyReference,
+                OperationKind.PropertySubpattern);
 
             startContext.RegisterCompilationEndAction(
                 endContext => AnalyzeCompilation(endContext, resourceUses, referencedProperties));

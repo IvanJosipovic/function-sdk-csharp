@@ -75,10 +75,21 @@ public class XrdSpecUsageAnalyzerTests
         Assert.Empty(diagnostics);
     }
 
-    private static string CreateSource(bool includeVersioning)
+    [Fact]
+    public async Task DoesNotReportWhenSpecFieldIsReferencedInPropertyPattern()
+    {
+        var diagnostics = await Analyze(
+            CreateSource(includeVersioning: true, useVersioningPropertyPattern: true));
+
+        Assert.Empty(diagnostics);
+    }
+
+    private static string CreateSource(bool includeVersioning, bool useVersioningPropertyPattern = false)
     {
         var versioning = includeVersioning
-            ? "_ = xr.Spec.Parameters.Versioning;"
+            ? useVersioningPropertyPattern
+                ? "_ = xr.Spec.Parameters is { Versioning: true };"
+                : "_ = xr.Spec.Parameters.Versioning;"
             : string.Empty;
 
         return $$"""
