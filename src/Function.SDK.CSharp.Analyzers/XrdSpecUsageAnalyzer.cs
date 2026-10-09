@@ -162,13 +162,12 @@ public sealed class XrdSpecUsageAnalyzer : DiagnosticAnalyzer
                     ? property.Name
                     : $"{parentPath}.{property.Name}";
 
-                if (property.Type is INamedTypeSymbol nestedType &&
-                    nestedType.TypeKind == TypeKind.Class &&
-                    IsGeneratedModelType(nestedType) &&
+                var nestedType = GetGeneratedModelType(property.Type, out var collectionPathSuffix);
+                if (nestedType is not null &&
                     !visitedTypes.Contains(nestedType) &&
                     GetSpecProperties(nestedType).Any())
                 {
-                    CollectSpecFields(nestedType, path, visitedTypes, fields);
+                    CollectSpecFields(nestedType, path + collectionPathSuffix, visitedTypes, fields);
                     continue;
                 }
 
@@ -179,6 +178,76 @@ public sealed class XrdSpecUsageAnalyzer : DiagnosticAnalyzer
         {
             visitedTypes.Remove(type);
         }
+    }
+
+    private static INamedTypeSymbol? GetGeneratedModelType(
+        ITypeSymbol type,
+        out string collectionPathSuffix)
+    {
+        var visitedTypes = new HashSet<ITypeSymbol>(SymbolEqualityComparer.Default);
+        collectionPathSuffix = string.Empty;
+
+        while (visitedTypes.Add(type))
+        {
+            if (type is IArrayTypeSymbol arrayType)
+            {
+                type = arrayType.ElementType;
+                collectionPathSuffix += "[]";
+                continue;
+            }
+
+            if (type is not INamedTypeSymbol namedType)
+            {
+                break;
+            }
+
+            if (namedType.TypeKind == TypeKind.Class && IsGeneratedModelType(namedType))
+            {
+                return namedType;
+            }
+
+            var dictionaryType = namedType.AllInterfaces
+                .Append(namedType)
+                .FirstOrDefault(IsGenericDictionary);
+            if (dictionaryType is not null)
+            {
+                type = dictionaryType.TypeArguments[1];
+                collectionPathSuffix += "{}";
+                continue;
+            }
+
+            var enumerableType = namedType.AllInterfaces
+                .Append(namedType)
+                .FirstOrDefault(IsGenericEnumerable);
+            if (enumerableType is not null)
+            {
+                type = enumerableType.TypeArguments[0];
+                collectionPathSuffix += "[]";
+                continue;
+            }
+
+            break;
+        }
+
+        collectionPathSuffix = string.Empty;
+        return null;
+    }
+
+    private static bool IsGenericDictionary(INamedTypeSymbol type)
+    {
+        var definition = type.OriginalDefinition;
+        return definition.TypeArguments.Length == 2 &&
+            definition.ContainingNamespace.ToDisplayString() == "System.Collections.Generic" &&
+            (definition.MetadataName == "IDictionary`2" ||
+             definition.MetadataName == "IReadOnlyDictionary`2");
+    }
+
+    private static bool IsGenericEnumerable(INamedTypeSymbol type)
+    {
+        var definition = type.OriginalDefinition;
+        return definition.TypeArguments.Length == 1 &&
+            definition.ContainingNamespace.ToDisplayString() == "System.Collections.Generic" &&
+            definition.MetadataName == "IEnumerable`1";
     }
 
     private static IEnumerable<IPropertySymbol> GetSpecProperties(INamedTypeSymbol type)

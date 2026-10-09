@@ -53,8 +53,9 @@ docker run -it -p 9443:9443 function-sdk-csharp-sample
   - Modify `xrd.yaml` and models are generated automatically.
 - **XRD spec usage analysis**
   - Diagnostic `FSDK001` warns when a leaf field declared under an XRD's
-    `spec` is not referenced by code that consumes that generated composite
-    resource model.
+    `spec`, including fields on array, enumerable, or dictionary-value model
+    elements, is not referenced by code that consumes that generated
+    composite resource model.
 - **CRD to model generation**
   - Add one or more `crd.yaml` files to the project and models are generated
     automatically.
