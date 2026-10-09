@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerfileContext>.</DockerfileContext>
+    <WarningsAsErrors>$(WarningsAsErrors);FSDK001</WarningsAsErrors>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="*.yaml" />
+    <AdditionalFiles Remove="package.yaml" />
+    <Content Remove="apiextensions.schema.json" />
+    <Content Remove="xrd.schema.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="package.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="KubernetesCRDModelGen.Models.azure.upbound.io" Version="1.55.0" />
+    <PackageReference Include="KubernetesCRDModelGen.Models.crossplane.io" Version="1.18.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Function.SDK.CSharp\Function.SDK.CSharp.csproj" />
+    <ProjectReference Include="..\Function.SDK.CSharp.SourceGenerator\Function.SDK.CSharp.SourceGenerator.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Function.SDK.CSharp.Analyzers\Function.SDK.CSharp.Analyzers.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+</Project>

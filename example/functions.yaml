@@ -1,0 +1,8 @@
+apiVersion: pkg.crossplane.io/v1
+kind: Function
+metadata:
+  name: function-myfunction
+  annotations:
+    # 'Docker' connects to Docker Engine. It uses Docker to pull and run a function runtime.
+    # 'Development' connects to a function runtime you have run manually.
+    render.crossplane.io/runtime: Development

@@ -1,0 +1,13 @@
+apiVersion: meta.pkg.crossplane.io/v1
+kind: Function
+metadata:
+  name: function-myfunction
+  annotations:
+    meta.crossplane.io/maintainer: Author
+    meta.crossplane.io/source: github.com/org/repo
+    meta.crossplane.io/description: |
+      description
+
+spec:
+  capabilities:
+  - composition

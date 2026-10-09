@@ -1,0 +1,10 @@
+apiVersion: platform.example.com/v1alpha1
+kind: XStorageBucket
+metadata:
+  name: example
+  namespace: default
+spec:
+  parameters:
+    location: eastus
+    versioning: true
+    acl: blob
