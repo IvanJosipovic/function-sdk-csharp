@@ -29,7 +29,7 @@
     <PackageReference Include="Grpc.AspNetCore" Version="2.84.0" />
     <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.84.0" />
     <PackageReference Include="KubernetesClient" Version="21.0.8" />
-    <PackageReference Include="KubernetesCRDModelGen.Models.crossplane.io" Version="1.19.0" />
+    <PackageReference Include="KubernetesCRDModelGen.Models.crossplane.io" Version="1.19.1" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
