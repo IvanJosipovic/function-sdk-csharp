@@ -33,7 +33,8 @@
       "automerge": true,
       "matchFileNames": [
         "tests/**",
-        "benchmarks/**"
+        "benchmarks/**",
+        "global.json"
       ]
     },
     {
@@ -42,11 +43,31 @@
         "patch",
         "digest"
       ],
-      "automerge": false,
+      "automerge": true,
       "semanticCommitType": "fix",
       "matchFileNames": [
-        "src/**",
-        "global.json"
+        "src/**"
+      ]
+    },
+    {
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "semanticCommitType": "fix",
+      "matchFileNames": [
+        "src/**"
+      ]
+    },
+    {
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "digest"
+      ],
+      "automerge": true,
+      "semanticCommitType": "chore",
+      "matchFileNames": [
+        "src/Function.SDK.CSharp.Sample/**"
       ]
     }
   ]
