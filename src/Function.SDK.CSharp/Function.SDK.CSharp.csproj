@@ -26,8 +26,8 @@
 
   <ItemGroup>
     <PackageReference Include="Enums.NET" Version="5.0.0" />
-    <PackageReference Include="Grpc.AspNetCore" Version="2.84.0" />
-    <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.84.0" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.85.0" />
+    <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.85.0" />
     <PackageReference Include="KubernetesClient" Version="21.0.8" />
     <PackageReference Include="KubernetesCRDModelGen.Models.crossplane.io" Version="1.19.0" />
   </ItemGroup>
