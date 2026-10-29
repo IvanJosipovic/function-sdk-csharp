@@ -146,7 +146,7 @@ var configMaps = request.GetObservedResources<V1ConfigMap>();
 
 | Extension | Description |
 | --- | --- |
-| `AddDesiredResource(resource, key)` | Adds or merges a desired Kubernetes resource using a canonical key. The optional key is used when `metadata.name` is absent. |
+| `AddDesiredResource(resource, key)` | Adds or merges a desired Kubernetes resource using a canonical key. The key uses `metadata.name`, then the `crossplane.io/external-name` annotation, then the optional `key` fallback. |
 | `AddDesiredUsage(by, of, replayDeletion)` | Adds a Crossplane `Usage` that protects one desired resource while another uses it. |
 | `GetDesiredResource<T>(key)` | Gets a desired Kubernetes resource using its canonical API version, kind, and key. |
 | `GetDesiredResources<T>()` | Enumerates desired resources matching the API version and kind of `T`. |
