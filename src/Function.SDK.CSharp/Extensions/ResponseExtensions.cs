@@ -308,8 +308,8 @@ public static partial class ResponseExtensions
     /// </summary>
     /// <param name="response">The response whose desired state will be updated.</param>
     /// <param name="resource">The Kubernetes resource to add or update.</param>
-    /// <param name="key">A fallback key to use when the resource has no metadata name.</param>
-    /// <exception cref="InvalidOperationException">Thrown when the resource has no metadata name and no key is provided.</exception>
+    /// <param name="key">A fallback key to use when the resource has no metadata name or external name annotation.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the resource has no metadata name or external name annotation and no key is provided.</exception>
     public static void AddDesiredResource(
         this RunFunctionResponse response,
         IKubernetesObject<V1ObjectMeta> resource,
@@ -319,16 +319,23 @@ public static partial class ResponseExtensions
         ArgumentNullException.ThrowIfNull(resource);
 
         var name = resource.Name();
-        if (string.IsNullOrWhiteSpace(name) && string.IsNullOrWhiteSpace(key))
+        var annotations = resource.Metadata?.Annotations;
+        var externalName = annotations is not null
+            && annotations.TryGetValue(Annotations.CrossplaneExternalName, out var value)
+                ? value
+                : null;
+        var resourceName = string.IsNullOrWhiteSpace(name) ? externalName : name;
+        if (string.IsNullOrWhiteSpace(resourceName) && string.IsNullOrWhiteSpace(key))
         {
-            throw new InvalidOperationException("Resource name is missing and no fallback key was provided.");
+            throw new InvalidOperationException(
+                "Resource metadata.name and crossplane.io/external-name are missing, and no fallback key was provided.");
         }
 
         InitializeKubernetesIdentity(resource);
 
         var resourceKey = KubernetesResourceIdentity.CreateKey(
             resource,
-            string.IsNullOrWhiteSpace(name) ? key! : name);
+            string.IsNullOrWhiteSpace(resourceName) ? key! : resourceName);
         response.Desired.AddOrUpdate(resourceKey, resource);
     }
 

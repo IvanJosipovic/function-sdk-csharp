@@ -31,6 +31,42 @@ public class ResponseResourceExtensionsTests
     }
 
     [Fact]
+    public void WhenAddingResourceWithExternalNameAnnotationThenExternalNameIsUsedAsKey()
+    {
+        var response = CreateResponse();
+        var resource = new V1ConfigMap
+        {
+            Metadata = new()
+            {
+                Annotations = new Dictionary<string, string>
+                {
+                    [Annotations.CrossplaneExternalName] = "external-example"
+                }
+            }
+        };
+
+        response.AddDesiredResource(resource);
+
+        response.Desired.Resources.ShouldContainKey("v1/ConfigMap/external-example");
+    }
+
+    [Fact]
+    public void WhenAddingResourceWithNameAndExternalNameAnnotationThenMetadataNameIsUsedAsKey()
+    {
+        var response = CreateResponse();
+        var resource = CreateConfigMap("metadata-example");
+        resource.Metadata.Annotations = new Dictionary<string, string>
+        {
+            [Annotations.CrossplaneExternalName] = "external-example"
+        };
+
+        response.AddDesiredResource(resource);
+
+        response.Desired.Resources.ShouldContainKey("v1/ConfigMap/metadata-example");
+        response.Desired.Resources.ShouldNotContainKey("v1/ConfigMap/external-example");
+    }
+
+    [Fact]
     public void WhenAddingEqualNamesInDifferentNamespacesThenResourcesRemainDistinct()
     {
         var response = CreateResponse();
