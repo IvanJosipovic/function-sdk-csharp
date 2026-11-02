@@ -141,11 +141,15 @@ spec:
                   public:
                     description: Enable public access to the Account
                     type: boolean
+                x-kubernetes-validations:
+                - rule: "self.acl == 'private' || self.public"
+                  message: public must be enabled when acl is blob or container
                 type: object
                 required:
                 - acl
                 - location
                 - versioning
+                - public
             type: object
             required:
             - parameters

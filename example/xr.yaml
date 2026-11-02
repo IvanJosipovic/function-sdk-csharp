@@ -8,3 +8,4 @@ spec:
     location: eastus
     versioning: true
     acl: blob
+    public: true

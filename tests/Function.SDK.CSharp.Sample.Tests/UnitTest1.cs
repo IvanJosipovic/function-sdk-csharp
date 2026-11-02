@@ -26,6 +26,7 @@ public class UnitTest1
                     Location = V1alpha1XStorageBucketSpecParametersLocationEnum.Eastus,
                     Versioning = true,
                     Acl = V1alpha1XStorageBucketSpecParametersAclEnum.Private,
+                    Public = false,
                 }
             }
         };
